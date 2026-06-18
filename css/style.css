@@ -218,7 +218,7 @@ button[type="submit"] { grid-column: 1 / -1; }
 /* ===================== ELENCO SERVIZI (griglia di card) ===================== */
 #lista {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: 1fr;   /* una scheda per riga, a tutta larghezza */
   gap: 16px;
 }
 .servizio {
