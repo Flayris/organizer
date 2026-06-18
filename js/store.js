@@ -68,20 +68,65 @@ class LocalStore {
 }
 
 /*
- * SEGNAPOSTO per il futuro — quando aggiungeremo il cloud, qui nascerà:
+ * SheetStore — salva i dati nel CLOUD usando un foglio Google.
+ * Parla con lo "sportello" (Apps Script) pubblicato sul foglio: stessi metodi
+ * di LocalStore (tutti/salva/elimina/sostituisciTutti), così l'app non cambia.
  *
- *   class FirebaseStore {
- *     async tutti() { ... legge da Firestore ... }
- *     async salva(servizio) { ... scrive su Firestore ... }
- *     async elimina(id) { ... }
- *     async sostituisciTutti(lista) { ... }
- *   }
- *
- * Stessi metodi -> l'app non si accorge della differenza.
+ * I dati vivono nel foglio Google e si sincronizzano su ogni dispositivo.
  */
+class SheetStore {
+  constructor(url, segreto) {
+    this.url = url;
+    this.segreto = segreto;
+  }
 
-// === UNICA RIGA DA CAMBIARE PER SCAMBIARE IL MOTORE DEI DATI ===
-// Oggi: locale. Domani: new FirebaseStore(...).
-const store = new LocalStore();
+  // Legge tutti i servizi dal foglio (richiesta GET con la parola segreta).
+  async tutti() {
+    const r = await fetch(this.url + '?token=' + encodeURIComponent(this.segreto));
+    const dati = await r.json();
+    if (dati.errore) throw new Error(dati.errore);
+    return Array.isArray(dati.dati) ? dati.dati : [];
+  }
+
+  // Crea o aggiorna un servizio nel foglio.
+  async salva(servizio) {
+    await this._invia({ azione: 'salva', servizio });
+    return servizio;
+  }
+
+  // Elimina un servizio dal foglio.
+  async elimina(id) {
+    await this._invia({ azione: 'elimina', id });
+  }
+
+  // Sostituisce TUTTO l'elenco (per import/ripristino backup).
+  async sostituisciTutti(lista) {
+    await this._invia({ azione: 'sostituisci', lista: Array.isArray(lista) ? lista : [] });
+  }
+
+  // Invio grezzo di una scrittura (POST). Privato (per convenzione, con "_").
+  async _invia(corpo) {
+    const r = await fetch(this.url, {
+      method: 'POST',
+      // "text/plain" evita il controllo CORS extra che Apps Script non gestisce.
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ token: this.segreto, ...corpo }),
+    });
+    const risposta = await r.json();
+    if (risposta.errore) throw new Error(risposta.errore);
+    return risposta;
+  }
+}
+
+// === CONFIGURAZIONE DEL FOGLIO GOOGLE ===
+// url: l'indirizzo "/exec" della tua app web. segreto: la parola scelta nello script.
+const CONFIG_SHEET = {
+  url: 'https://script.google.com/macros/s/AKfycbwTzcePEQ4Pnne1hsNJ-LBZyt4XdjrCS1qNSkLdJ9PJydPdnFgNJyqNBND7_KuQwOXd/exec',
+  segreto: 'organizer_laco_05',
+};
+
+// === UNICA RIGA CHE SCEGLIE IL MOTORE DEI DATI ===
+// Ora: cloud su foglio Google. (Per tornare al locale: new LocalStore())
+const store = new SheetStore(CONFIG_SHEET.url, CONFIG_SHEET.segreto);
 
 window.Store = store;

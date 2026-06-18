@@ -24,7 +24,16 @@ function euro(n) {
  * applica i filtri, calcola i totali e aggiorna la pagina.
  */
 async function aggiorna() {
-  const tutti = await Store.tutti();
+  let tutti;
+  try {
+    tutti = await Store.tutti();
+  } catch (err) {
+    // Errore di rete o di accesso al foglio: avvisa invece di restare in silenzio.
+    document.getElementById('lista').innerHTML =
+      '<p class="vuoto">⚠️ Non riesco a leggere i dati dal foglio Google.<br>' +
+      'Controlla la connessione e la configurazione. (' + escape(err.message) + ')</p>';
+    return;
+  }
   const visibili = filtraServizi(tutti, filtri);
   const totali = calcolaTotali(tutti); // i totali sono sempre sull'INTERO elenco
 
@@ -96,7 +105,17 @@ async function salvaDalForm(e) {
   const errori = validaServizio(servizio);
   if (errori.length) { alert(errori.join('\n')); return; }
 
-  await Store.salva(servizio);
+  const btn = f.querySelector('button[type="submit"]');
+  const testoBtn = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Salvataggio...'; // feedback durante la rete
+  try {
+    await Store.salva(servizio);
+  } catch (err) {
+    alert('Non sono riuscito a salvare sul foglio Google:\n' + err.message);
+    return;
+  } finally {
+    btn.disabled = false; btn.textContent = testoBtn;
+  }
   f.reset();
   f.id.value = '';
   aggiornaCampoTipoAltro(); // dopo il reset, ripulisce il campo se serve
