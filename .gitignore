@@ -1,0 +1,14 @@
+# Screenshot personali / immagini di lavoro (non fanno parte dell'app)
+screenshots/
+
+# File temporanei del sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Eventuali file di test usa-e-getta
+test-*.mjs
+
+# Dipendenze/strumenti futuri (es. Firebase CLI)
+node_modules/
+.firebase/

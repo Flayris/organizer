@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organizer Servizi — scheletro</title>
+  <!-- Il "?v=" obbliga il browser a riscaricare i file quando cambiano,
+       evitando che resti su versioni vecchie in cache. Si alza a ogni modifica. -->
+  <link rel="stylesheet" href="css/style.css?v=5">
+</head>
+<body>
+  <!--
+    GUSCIO MINIMO (fase scheletro).
+    Serve solo a PROVARE che la logica funziona. L'interfaccia "bella e tech"
+    la costruiremo dopo, quando saremo sicuri che tutto gira.
+  -->
+  <header>
+    <h1>Organizer Servizi</h1>
+    <div class="totali">
+      <span>Servizi: <strong id="conteggio">0</strong></span>
+      <span>Totale mese: <strong id="totMensile">0,00 €</strong></span>
+      <span>Totale anno: <strong id="totAnnuale">0,00 €</strong></span>
+    </div>
+  </header>
+
+  <!-- Due "interruttori" radio nascosti: decidono quale vista è mostrata.
+       Le schede qui sotto sono <label> collegate a questi radio, così cliccarle
+       cambia schermata DA SOLE (lo fa il browser, senza JavaScript). -->
+  <input type="radio" name="vista" id="tab-servizi" checked hidden>
+  <input type="radio" name="vista" id="tab-gestione" hidden>
+  <nav class="schede">
+    <label class="scheda" for="tab-servizi">📋 I miei servizi</label>
+    <label class="scheda" for="tab-gestione">➕ Inserisci / Backup</label>
+  </nav>
+
+  <main>
+    <!-- ============ VISTA 1: I MIEI SERVIZI (sola lettura) ============ -->
+    <div id="vista-servizi" class="vista">
+      <!-- FILTRI + RICERCA -->
+      <section class="pannello">
+        <h2>Cerca e filtra</h2>
+        <input id="cerca" type="search" placeholder="Cerca per nome o descrizione...">
+        <select id="filtroCategoria">
+          <option value="tutte">Tutte le categorie</option>
+          <option value="lavoro">lavoro</option>
+          <option value="personale">personale</option>
+        </select>
+        <select id="filtroTipo">
+          <option value="tutti">Tutti i tipi</option>
+          <option value="AI">AI</option>
+          <option value="altro">altro</option>
+        </select>
+      </section>
+
+      <!-- ELENCO SERVIZI -->
+      <section class="pannello">
+        <h2>I tuoi servizi</h2>
+        <div id="lista"></div>
+      </section>
+    </div>
+
+    <!-- ============ VISTA 2: INSERISCI / BACKUP ============ -->
+    <div id="vista-gestione" class="vista">
+    <!-- FORM: aggiungi / modifica un servizio -->
+    <section class="pannello">
+      <h2>Aggiungi / modifica servizio</h2>
+      <form id="form">
+        <input type="hidden" name="id">
+        <label>Nome
+          <input name="nome" type="text" placeholder="es. ChatGPT Plus" required>
+        </label>
+        <!-- Tipo + campo libero impilati: il secondo appare SOTTO il menu,
+             solo quando si sceglie "altro" (gestito da app.js). -->
+        <div class="campo-tipo">
+          <label>Tipo
+            <select name="tipo">
+              <option value="AI">AI</option>
+              <option value="altro">altro</option>
+            </select>
+          </label>
+          <label id="campoTipoAltro">
+            <input name="tipoAltro" type="text" placeholder="Scrivi che tipo è... (es. Cloud storage)">
+          </label>
+        </div>
+        <label>Categoria
+          <select name="categoria">
+            <option value="lavoro">lavoro</option>
+            <option value="personale">personale</option>
+          </select>
+        </label>
+        <label>Costo (€)
+          <input name="costo" type="number" step="0.01" min="0" placeholder="20" required>
+        </label>
+        <label>Frequenza
+          <select name="frequenza">
+            <option value="settimanale">settimanale</option>
+            <option value="mensile" selected>mensile</option>
+            <option value="annuale">annuale</option>
+          </select>
+        </label>
+        <label class="largo">Descrizione
+          <textarea name="descrizione" rows="2" placeholder="A cosa serve..."></textarea>
+        </label>
+        <button type="submit">Salva</button>
+      </form>
+    </section>
+
+    <!-- BACKUP -->
+    <section class="pannello">
+      <h2>Backup</h2>
+      <button id="esporta">Esporta backup (.json)</button>
+      <label class="finto-bottone">Importa backup
+        <input id="importa" type="file" accept="application/json" hidden>
+      </label>
+    </section>
+    </div><!-- fine vista-gestione -->
+  </main>
+
+  <!-- Ordine importante: prima i dati/logica, poi l'app che li usa. -->
+  <script src="js/model.js?v=5"></script>
+  <script src="js/store.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
+</body>
+</html>

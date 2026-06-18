@@ -1,0 +1,286 @@
+/*
+ * style.css — Tema "liquid glass" tech.
+ * Dark navy profondo + bagliori blu/ciano + pannelli in vetro smerigliato
+ * (translucidi e sfocati) con bordi luminosi e pillole a gradiente.
+ *
+ * Nota: cambia SOLO l'aspetto. Tutti i nomi (id/classi) restano identici,
+ * quindi la logica in app.js continua a funzionare senza modifiche.
+ */
+
+:root {
+  /* Sfondo e superfici */
+  --bg: #05070f;
+  --vetro: rgba(255, 255, 255, 0.05);     /* riempimento "vetro" dei pannelli */
+  --vetro-bordo: rgba(140, 170, 255, 0.18); /* bordo tenue luminoso */
+  --vetro-bordo-on: rgba(120, 200, 255, 0.65); /* bordo acceso (focus/attivo) */
+
+  /* Testo */
+  --testo: #e9eefc;
+  --tenue: #8a96b5;
+
+  /* Accenti */
+  --ciano: #22d3ee;
+  --blu: #3b82f6;
+  --grad: linear-gradient(135deg, var(--ciano), var(--blu));
+  --glow: 0 0 24px rgba(59, 130, 246, 0.45);
+}
+
+* { box-sizing: border-box; }
+
+html, body { min-height: 100%; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--testo);
+  line-height: 1.5;
+  /* Bagliori ambientali blu/ciano sopra un navy molto scuro (come le reference). */
+  background:
+    radial-gradient(1200px 620px at 50% -12%, rgba(43, 108, 255, 0.28), transparent 60%),
+    radial-gradient(900px 520px at 88% 6%, rgba(34, 211, 238, 0.12), transparent 55%),
+    radial-gradient(800px 600px at 8% 30%, rgba(80, 60, 255, 0.10), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+/* ===================== HEADER ===================== */
+header {
+  padding: 22px 28px 16px;
+}
+header h1 {
+  margin: 0 0 10px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: .3px;
+  /* Titolo con gradiente ciano->blu. */
+  background: linear-gradient(120deg, #cfe9ff, var(--ciano) 55%, var(--blu));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+header small { font-size: .72rem; }
+
+/* Riepilogo totali come "chip" di vetro luminose. */
+.totali { display: flex; gap: 12px; flex-wrap: wrap; }
+.totali span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .82rem;
+  color: var(--tenue);
+  background: var(--vetro);
+  border: 1px solid var(--vetro-bordo);
+  border-radius: 999px;
+  padding: 6px 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.totali strong {
+  color: var(--testo);
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: .95rem;
+}
+
+/* ===================== SCHEDE (pillole) ===================== */
+.schede {
+  display: flex;
+  gap: 10px;
+  padding: 8px 28px 0;
+  flex-wrap: wrap;
+}
+.scheda {
+  cursor: pointer;
+  user-select: none;
+  font-size: .9rem;
+  color: var(--tenue);
+  background: var(--vetro);
+  border: 1px solid var(--vetro-bordo);
+  border-radius: 999px;
+  padding: 10px 20px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: color .2s, box-shadow .2s, border-color .2s, transform .1s;
+}
+.scheda:hover { color: var(--testo); border-color: var(--vetro-bordo-on); }
+.scheda:active { transform: translateY(1px); }
+
+/* Scheda attiva: pillola con gradiente pieno e bagliore (in pura CSS). */
+body:has(#tab-servizi:checked) .scheda[for="tab-servizi"],
+body:has(#tab-gestione:checked) .scheda[for="tab-gestione"] {
+  color: #fff;
+  background: var(--grad);
+  border-color: transparent;
+  box-shadow: var(--glow);
+}
+
+/* ===================== LAYOUT VISTE ===================== */
+main {
+  display: grid;
+  gap: 18px;
+  padding: 18px 28px 32px;
+}
+.vista { display: grid; gap: 18px; }
+#vista-gestione { display: none; }
+body:has(#tab-gestione:checked) #vista-servizi { display: none; }
+body:has(#tab-gestione:checked) #vista-gestione { display: grid; }
+
+/* ===================== PANNELLI DI VETRO ===================== */
+.pannello {
+  position: relative;
+  background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+  border: 1px solid var(--vetro-bordo);
+  border-radius: 20px;
+  padding: 20px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+.pannello h2 {
+  margin: 0 0 16px;
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--ciano);
+}
+
+/* ===================== FORM E CAMPI ===================== */
+form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+label {
+  display: flex; flex-direction: column; gap: 6px;
+  font-size: .8rem; color: var(--tenue);
+}
+label.largo { grid-column: 1 / -1; }
+
+input, select, textarea {
+  font: inherit;
+  color: var(--testo);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--vetro-bordo);
+  border-radius: 12px;
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+input::placeholder, textarea::placeholder { color: rgba(138, 150, 181, 0.55); }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--vetro-bordo-on);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12), 0 0 18px rgba(56, 189, 248, 0.18);
+}
+select option { background: #0a0e1a; color: var(--testo); }
+
+/* "Tipo" + campo libero impilati (il campo appare solo con "altro"). */
+.campo-tipo { display: flex; flex-direction: column; gap: 8px; }
+#campoTipoAltro { display: none; }
+.campo-tipo:has(select[name="tipo"] option[value="altro"]:checked) #campoTipoAltro {
+  display: flex;
+}
+
+/* ===================== PULSANTI ===================== */
+button, .finto-bottone {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 11px 22px;
+  border: none;
+  transition: box-shadow .2s, transform .1s, background .2s, color .2s;
+}
+/* Pulsante principale: pillola a gradiente con bagliore. */
+button[type="submit"], #esporta {
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: .3px;
+  background: var(--grad);
+  box-shadow: var(--glow);
+}
+button[type="submit"]:hover, #esporta:hover {
+  box-shadow: 0 0 32px rgba(59, 130, 246, 0.7);
+  transform: translateY(-1px);
+}
+button[type="submit"] { grid-column: 1 / -1; }
+
+/* Pulsante secondario "di vetro" (importa). */
+.finto-bottone {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ciano);
+  background: var(--vetro);
+  border: 1px solid var(--vetro-bordo);
+  margin-left: 10px;
+}
+.finto-bottone:hover { border-color: var(--vetro-bordo-on); color: #fff; }
+
+/* ===================== ELENCO SERVIZI (griglia di card) ===================== */
+#lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.servizio {
+  position: relative;
+  background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015));
+  border: 1px solid var(--vetro-bordo);
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: border-color .2s, box-shadow .2s, transform .15s;
+}
+.servizio:hover {
+  border-color: var(--vetro-bordo-on);
+  box-shadow: 0 0 30px rgba(56, 130, 246, 0.22);
+  transform: translateY(-2px);
+}
+.servizio strong { display: block; font-size: 1.1rem; margin-bottom: 8px; color: #fff; }
+.servizio > span { font-size: .9rem; color: var(--testo); }
+.servizio em { display: inline-block; color: var(--tenue); font-size: .82rem; margin-left: 6px; }
+.servizio p { margin: 10px 0 12px; color: var(--tenue); font-size: .88rem; }
+
+/* Etichette tipo/categoria come micro-pillole. */
+.tag {
+  display: inline-block;
+  font-size: .68rem;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: var(--ciano);
+  background: rgba(34, 211, 238, 0.10);
+  border: 1px solid rgba(34, 211, 238, 0.30);
+  border-radius: 999px;
+  padding: 2px 10px;
+  margin-right: 6px;
+}
+
+/* Azioni sulla card: pillole "fantasma". */
+.servizio button {
+  padding: 6px 14px;
+  font-size: .8rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--vetro-bordo);
+  margin-right: 8px;
+}
+.servizio button[data-modifica] { color: var(--ciano); }
+.servizio button[data-modifica]:hover { border-color: var(--ciano); color: #fff; }
+.servizio button[data-elimina] { color: #ff7a8a; border-color: rgba(255, 122, 138, 0.4); }
+.servizio button[data-elimina]:hover { background: rgba(255, 122, 138, 0.12); color: #fff; }
+
+.vuoto {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--tenue);
+  padding: 28px;
+}
+
+/* ===================== CAMPI DELLA VISTA SERVIZI ===================== */
+/* Ricerca e filtri in linea, larghi e comodi. */
+#vista-servizi .pannello:first-child {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+  align-items: end;
+}
+#vista-servizi .pannello:first-child h2 { grid-column: 1 / -1; }
