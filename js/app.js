@@ -51,14 +51,20 @@ async function aggiorna() {
     const riga = document.createElement('div');
     riga.className = 'servizio';
     riga.innerHTML = `
-      <strong>${escape(s.nome)}</strong>
-      <span class="tag">${escape(etichettaTipo(s))}</span>
-      <span class="tag">${s.categoria}</span>
-      <span>${euro(s.costo)} / ${s.frequenza}</span>
-      <em>(${euro(costoMensile(s))}/mese)</em>
-      <p>${escape(s.descrizione)}</p>
-      <button data-modifica="${s.id}">Modifica</button>
-      <button data-elimina="${s.id}">Elimina</button>
+      <div class="servizio-info">
+        <div class="servizio-riga1">
+          <strong>${escape(s.nome)}</strong>
+          <span class="tag">${escape(etichettaTipo(s))}</span>
+          <span class="tag">${s.categoria}</span>
+          <span class="prezzo">${euro(s.costo)} / ${s.frequenza}</span>
+          <em>(${euro(costoMensile(s))}/mese)</em>
+        </div>
+        ${s.descrizione ? `<p>${escape(s.descrizione)}</p>` : ''}
+      </div>
+      <div class="servizio-azioni">
+        <button data-modifica="${s.id}">Modifica</button>
+        <button data-elimina="${s.id}">Elimina</button>
+      </div>
     `;
     lista.appendChild(riga);
   }

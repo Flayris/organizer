@@ -221,52 +221,78 @@ button[type="submit"] { grid-column: 1 / -1; }
   grid-template-columns: 1fr;   /* una scheda per riga, a tutta larghezza */
   gap: 16px;
 }
+/* Card compatta: riga orizzontale, info a sinistra e azioni a destra.
+   Pensata per scorrere tante voci occupando poco spazio in verticale. */
 .servizio {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
   background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015));
   border: 1px solid var(--vetro-bordo);
-  border-radius: 18px;
-  padding: 16px 16px 14px;
+  border-radius: 14px;
+  padding: 10px 14px;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  transition: border-color .2s, box-shadow .2s, transform .15s;
+  transition: border-color .2s, box-shadow .2s;
 }
 .servizio:hover {
   border-color: var(--vetro-bordo-on);
-  box-shadow: 0 0 30px rgba(56, 130, 246, 0.22);
-  transform: translateY(-2px);
+  box-shadow: 0 0 24px rgba(56, 130, 246, 0.18);
 }
-.servizio strong { display: block; font-size: 1.1rem; margin-bottom: 8px; color: #fff; }
-.servizio > span { font-size: .9rem; color: var(--testo); }
-.servizio em { display: inline-block; color: var(--tenue); font-size: .82rem; margin-left: 6px; }
-.servizio p { margin: 10px 0 12px; color: var(--tenue); font-size: .88rem; }
+
+/* Blocco informazioni a sinistra (occupa lo spazio disponibile). */
+.servizio-info { flex: 1; min-width: 0; }
+/* Riga principale: nome + etichette + prezzo, tutto in linea. */
+.servizio-riga1 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.servizio strong { font-size: 1rem; color: #fff; }
+.servizio .prezzo { font-size: .9rem; color: var(--testo); }
+.servizio em { color: var(--tenue); font-size: .8rem; }
+.servizio p {
+  margin: 3px 0 0;
+  color: var(--tenue);
+  font-size: .82rem;
+  /* Descrizione su una riga sola, con "..." se troppo lunga. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* Etichette tipo/categoria come micro-pillole. */
 .tag {
   display: inline-block;
-  font-size: .68rem;
+  font-size: .66rem;
   letter-spacing: .4px;
   text-transform: uppercase;
   color: var(--ciano);
   background: rgba(34, 211, 238, 0.10);
   border: 1px solid rgba(34, 211, 238, 0.30);
   border-radius: 999px;
-  padding: 2px 10px;
-  margin-right: 6px;
+  padding: 1px 9px;
 }
 
-/* Azioni sulla card: pillole "fantasma". */
-.servizio button {
-  padding: 6px 14px;
-  font-size: .8rem;
+/* Azioni a destra: due pulsanti piccoli impilati verticalmente. */
+.servizio-azioni {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.servizio-azioni button {
+  padding: 4px 14px;
+  font-size: .74rem;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--vetro-bordo);
-  margin-right: 8px;
 }
-.servizio button[data-modifica] { color: var(--ciano); }
-.servizio button[data-modifica]:hover { border-color: var(--ciano); color: #fff; }
-.servizio button[data-elimina] { color: #ff7a8a; border-color: rgba(255, 122, 138, 0.4); }
-.servizio button[data-elimina]:hover { background: rgba(255, 122, 138, 0.12); color: #fff; }
+.servizio-azioni button[data-modifica] { color: var(--ciano); }
+.servizio-azioni button[data-modifica]:hover { border-color: var(--ciano); color: #fff; }
+.servizio-azioni button[data-elimina] { color: #ff7a8a; border-color: rgba(255, 122, 138, 0.4); }
+.servizio-azioni button[data-elimina]:hover { background: rgba(255, 122, 138, 0.12); color: #fff; }
 
 .vuoto {
   grid-column: 1 / -1;
