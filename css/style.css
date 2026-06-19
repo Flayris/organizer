@@ -310,3 +310,44 @@ button[type="submit"] { grid-column: 1 / -1; }
   align-items: end;
 }
 #vista-servizi .pannello:first-child h2 { grid-column: 1 / -1; }
+
+/* ===================== ADATTAMENTO TABLET / TELEFONO ===================== */
+/* Sotto ~820px (iPad in verticale e telefoni): ricerca e filtri impilati,
+   così i menu non sforano oltre il bordo dello schermo. */
+@media (max-width: 820px) {
+  #vista-servizi .pannello:first-child {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+}
+
+/* Sotto ~560px (telefoni): tutto a una colonna e margini più stretti. */
+@media (max-width: 560px) {
+  header { padding: 16px 16px 10px; }
+  header h1 { font-size: 1.3rem; }
+  .totali { gap: 8px; }
+  .totali span { font-size: .78rem; padding: 5px 12px; }
+
+  .schede { padding: 6px 16px 0; flex-wrap: wrap; }
+  .scheda { padding: 9px 16px; font-size: .85rem; }
+
+  main { padding: 14px 16px 28px; gap: 14px; }
+  .pannello { padding: 16px; border-radius: 16px; }
+
+  /* Modulo di inserimento: una colonna sola. */
+  form { grid-template-columns: 1fr; }
+
+  /* Card servizio: le azioni restano a destra ma un po' più compatte. */
+  .servizio { gap: 12px; padding: 10px 12px; }
+  .servizio-azioni button { padding: 4px 10px; }
+}
+
+/* Rispetta le zone "sicure" degli iPhone (notch / Dynamic Island) quando
+   l'app è installata e aperta a tutto schermo. */
+@supports (padding: max(0px)) {
+  header {
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-left: max(28px, env(safe-area-inset-left));
+    padding-right: max(28px, env(safe-area-inset-right));
+  }
+}
