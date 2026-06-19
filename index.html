@@ -13,7 +13,7 @@
 
   <!-- Il "?v=" obbliga il browser a riscaricare i file quando cambiano,
        evitando che resti su versioni vecchie in cache. Si alza a ogni modifica. -->
-  <link rel="stylesheet" href="css/style.css?v=10">
+  <link rel="stylesheet" href="css/style.css?v=11">
 </head>
 <body>
   <!--
@@ -112,21 +112,31 @@
       </form>
     </section>
 
-    <!-- BACKUP -->
+    <!-- SCARICA PDF -->
     <section class="pannello">
-      <h2>Backup</h2>
-      <button id="esporta">Esporta backup (.json)</button>
-      <label class="finto-bottone">Importa backup
-        <input id="importa" type="file" accept="application/json" hidden>
-      </label>
+      <h2>Scarica PDF</h2>
+      <p class="aiuto">Crea un documento con l'elenco dei pagamenti del periodo scelto e il totale.</p>
+      <div class="riga-pdf">
+        <label>Periodo
+          <select id="periodoPdf">
+            <option value="mensile">Mensile</option>
+            <option value="annuale">Annuale</option>
+          </select>
+        </label>
+        <button id="scaricaPdf" type="button">Scarica PDF</button>
+      </div>
     </section>
     </div><!-- fine vista-gestione -->
   </main>
 
+  <!-- Documento per il PDF: invisibile a schermo, riempito da app.js e
+       mostrato solo durante la stampa (vedi @media print nel CSS). -->
+  <div id="reportStampa" aria-hidden="true"></div>
+
   <!-- Ordine importante: prima i dati/logica, poi l'app che li usa. -->
-  <script src="js/model.js?v=10"></script>
-  <script src="js/store.js?v=10"></script>
-  <script src="js/app.js?v=10"></script>
+  <script src="js/model.js?v=11"></script>
+  <script src="js/store.js?v=11"></script>
+  <script src="js/app.js?v=11"></script>
 
   <!-- Registra il service worker: abilita installazione e uso offline. -->
   <script>

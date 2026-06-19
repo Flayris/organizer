@@ -1,9 +1,8 @@
 /*
  * app.js — Collega logica (Model) e dati (Store) all'interfaccia.
  *
- * In questa fase "scheletro" l'interfaccia è volutamente grezza: serve solo a
- * verificare che TUTTO funzioni (aggiungi, modifica, elimina, totali, filtri,
- * esporta, importa). La grafica bella arriverà dopo, e non toccherà questa logica.
+ * Gestisce tutte le azioni dell'interfaccia: aggiungi, modifica, elimina,
+ * totali, filtri, cambio vista e generazione del PDF di riepilogo.
  */
 
 const { creaServizio, validaServizio, etichettaTipo, calcolaTotali,
@@ -145,33 +144,65 @@ async function modifica(id) {
   f.descrizione.value = s.descrizione;
 }
 
-// Esporta tutti i dati in un file .json scaricabile (il "salvagente" portabile).
-async function esporta() {
-  const dati = await Store.tutti();
-  const blob = new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'organizer-backup.json';
-  a.click();
-  URL.revokeObjectURL(url);
+/*
+ * Costruisce l'HTML del documento PDF: titolo, data, tabella dei servizi col
+ * costo nel periodo scelto (mensile o annuale) e il totale.
+ */
+function costruisciReport(servizi, periodo) {
+  const annuale = periodo === 'annuale';
+  const etichetta = annuale ? 'annuale' : 'mensile';
+  const costoPeriodo = (s) => (annuale ? costoAnnuale(s) : costoMensile(s));
+  const totale = servizi.reduce((t, s) => t + costoPeriodo(s), 0);
+  const oggi = new Date().toLocaleDateString('it-IT', {
+    day: '2-digit', month: 'long', year: 'numeric',
+  });
+
+  const righe = servizi.map((s) => `
+    <tr>
+      <td>${escape(s.nome)}</td>
+      <td>${escape(etichettaTipo(s))}</td>
+      <td>${s.categoria}</td>
+      <td class="num">${euro(costoPeriodo(s))}</td>
+    </tr>`).join('');
+
+  return `
+    <h1>Riepilogo pagamenti — ${annuale ? 'Annuale' : 'Mensile'}</h1>
+    <p class="meta">Generato il ${oggi} · ${servizi.length} servizi</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Servizio</th><th>Tipo</th><th>Categoria</th>
+          <th class="num">Costo ${etichetta}</th>
+        </tr>
+      </thead>
+      <tbody>${righe || '<tr><td colspan="4">Nessun servizio inserito.</td></tr>'}</tbody>
+      <tfoot>
+        <tr><td colspan="3">Totale ${etichetta}</td><td class="num">${euro(totale)}</td></tr>
+      </tfoot>
+    </table>`;
 }
 
-// Importa un file .json e SOSTITUISCE l'elenco corrente.
-async function importa(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const testo = await file.text();
+/*
+ * Prepara il documento e apre la stampa del browser (da cui si sceglie
+ * "Salva come PDF"). Funziona su PC, iPhone e iPad.
+ */
+async function scaricaPdf() {
+  const periodo = document.getElementById('periodoPdf').value; // mensile | annuale
+  let servizi;
   try {
-    const lista = JSON.parse(testo);
-    if (!Array.isArray(lista)) throw new Error('Formato non valido.');
-    await Store.sostituisciTutti(lista);
-    await aggiorna();
-    alert('Importazione completata.');
+    servizi = await Store.tutti();
   } catch (err) {
-    alert('File non valido: ' + err.message);
+    alert('Non riesco a leggere i dati per il PDF: ' + err.message);
+    return;
   }
-  e.target.value = '';
+  document.getElementById('reportStampa').innerHTML = costruisciReport(servizi, periodo);
+
+  // Imposta un nome di file sensato (la stampa usa il titolo della pagina).
+  const titoloOrig = document.title;
+  document.title = 'Riepilogo pagamenti ' + periodo;
+  window.addEventListener('afterprint', () => { document.title = titoloOrig; }, { once: true });
+
+  window.print();
 }
 
 /*
@@ -195,8 +226,7 @@ function inizializza() {
   // Mostra/nasconde il campo "Specifica tipo" al cambio del menu Tipo.
   document.querySelector('#form [name="tipo"]').addEventListener('change', aggiornaCampoTipoAltro);
   aggiornaCampoTipoAltro(); // stato iniziale corretto al caricamento
-  document.getElementById('esporta').addEventListener('click', esporta);
-  document.getElementById('importa').addEventListener('change', importa);
+  document.getElementById('scaricaPdf').addEventListener('click', scaricaPdf);
 
   // Filtri
   document.getElementById('cerca').addEventListener('input', (e) => {

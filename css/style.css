@@ -351,3 +351,36 @@ button[type="submit"] { grid-column: 1 / -1; }
     padding-right: max(28px, env(safe-area-inset-right));
   }
 }
+
+/* ===================== SEZIONE "SCARICA PDF" ===================== */
+.aiuto { color: var(--tenue); font-size: .85rem; margin: 0 0 14px; }
+.riga-pdf { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; }
+.riga-pdf label { min-width: 160px; }
+
+/* Il documento PDF è invisibile a schermo: appare solo durante la stampa. */
+#reportStampa { display: none; }
+
+/* ===================== DOCUMENTO PDF (solo in stampa) ===================== */
+@media print {
+  /* Mostra SOLO il report, sfondo bianco e testo nero (no tema scuro). */
+  body > *:not(#reportStampa) { display: none !important; }
+  html, body { background: #fff !important; }
+  #reportStampa {
+    display: block !important;
+    color: #000;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 8px;
+  }
+  #reportStampa h1 { font-size: 20px; margin: 0 0 4px; }
+  #reportStampa .meta { color: #555; font-size: 12px; margin: 0 0 18px; }
+  #reportStampa table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  #reportStampa th, #reportStampa td {
+    text-align: left; padding: 8px 10px; border-bottom: 1px solid #ddd;
+  }
+  #reportStampa thead th { border-bottom: 2px solid #333; }
+  #reportStampa .num { text-align: right; white-space: nowrap; }
+  #reportStampa tfoot td {
+    font-weight: 700; font-size: 14px;
+    border-top: 2px solid #333; border-bottom: none;
+  }
+}
