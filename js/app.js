@@ -7,8 +7,12 @@
 
 const { creaServizio, validaServizio, etichettaTipo, calcolaTotali,
         filtraServizi, costoMensile, costoAnnuale, categorieDa, contaCategorie,
+        giorniAlRinnovo, ordinaPerRinnovo,
         CATEGORIA_DEFAULT, FREQUENZE, TIPI } = window.Model;
 const Store = window.Store;
+
+// Quanti giorni prima del rinnovo far comparire glow e avvisi.
+const SOGLIA_RINNOVO = 15;
 
 // Stato dei filtri attualmente attivi nell'interfaccia.
 let filtri = { testo: '', categoria: 'tutte', tipo: 'tutti' };
@@ -52,6 +56,7 @@ async function ricarica() {
   _categorie = categorieDa(_servizi, categorieSalvate);
   popolaMenuCategorie(_categorie);
   render();
+  avvisiRinnovo(); // avviso rinnovi in arrivo (una volta al giorno)
 }
 
 /*
@@ -59,7 +64,8 @@ async function ricarica() {
  * e i filtri correnti: nessuna chiamata di rete. È quello che usano i filtri.
  */
 function render() {
-  const visibili = filtraServizi(_servizi, filtri);
+  // Ordina per vicinanza al rinnovo (i più imminenti in alto).
+  const visibili = ordinaPerRinnovo(filtraServizi(_servizi, filtri));
   const totali = calcolaTotali(_servizi); // i totali sono sempre sull'INTERO elenco
 
   document.getElementById('totMensile').textContent = euro(totali.mensile);
@@ -73,7 +79,10 @@ function render() {
   } else {
     for (const s of visibili) {
       const riga = document.createElement('div');
-      riga.className = 'servizio';
+      // Glow da 15 giorni prima fino al giorno del rinnovo: verde se automatico, giallo se manuale.
+      const giorni = giorniAlRinnovo(s.dataRinnovo);
+      const inFinestra = giorni !== null && giorni >= 0 && giorni <= SOGLIA_RINNOVO;
+      riga.className = 'servizio' + (inFinestra ? (s.pagamentoAutomatico ? ' glow-auto' : ' glow-manuale') : '');
       riga.innerHTML = `
         <div class="servizio-info">
           <div class="servizio-riga1">
@@ -96,6 +105,7 @@ function render() {
     }
   }
   renderCategorie();
+  aggiornaCampanella();
 }
 
 /*
@@ -222,7 +232,7 @@ function escape(t) {
  *   - con input:  Conferma -> testo scritto (anche ''), Annulla -> null
  *   - senza input: Conferma -> true, Annulla -> false
  */
-function apriModale({ titolo, messaggio = '', input = false, placeholder = '',
+function apriModale({ titolo, messaggio = '', messaggioHtml = '', input = false, placeholder = '',
                      testoConferma = 'Conferma', mostraAnnulla = true }) {
   return new Promise((resolve) => {
     const mod = document.getElementById('modale');
@@ -233,8 +243,9 @@ function apriModale({ titolo, messaggio = '', input = false, placeholder = '',
     const btnNo = document.getElementById('modaleAnnulla');
 
     elTit.textContent = titolo || '';
-    elMsg.textContent = messaggio;
-    elMsg.style.display = messaggio ? 'block' : 'none';
+    // messaggioHtml = contenuto già formattato (es. righe colorate); altrimenti testo semplice.
+    if (messaggioHtml) { elMsg.innerHTML = messaggioHtml; elMsg.style.display = 'block'; }
+    else { elMsg.textContent = messaggio; elMsg.style.display = messaggio ? 'block' : 'none'; }
     elInp.style.display = input ? 'block' : 'none';
     elInp.value = '';
     elInp.placeholder = placeholder;
@@ -274,6 +285,58 @@ const chiediConferma = (titolo, messaggio) =>
   apriModale({ titolo, messaggio, testoConferma: 'Sì, procedi' });
 const avvisa = (titolo, messaggio) =>
   apriModale({ titolo, messaggio, mostraAnnulla: false, testoConferma: 'OK' });
+
+/*
+ * Servizi con rinnovo entro la soglia (oggi → SOGLIA_RINNOVO giorni),
+ * ordinati dal più imminente. Ogni voce: { s: servizio, g: giorni al rinnovo }.
+ */
+function serviziImminenti() {
+  return _servizi
+    .map((s) => ({ s, g: giorniAlRinnovo(s.dataRinnovo) }))
+    .filter((x) => x.g !== null && x.g >= 0 && x.g <= SOGLIA_RINNOVO)
+    .sort((a, b) => a.g - b.g);
+}
+
+// Costruisce le righe colorate (verde = automatico, giallo = manuale) per la finestra.
+function htmlAvvisi(imminenti) {
+  return imminenti.map(({ s, g }) => {
+    const cls = s.pagamentoAutomatico ? 'auto' : 'manuale';
+    const quando = g === 0 ? 'oggi' : (g === 1 ? 'domani' : `tra ${g} giorni`);
+    const nota = s.pagamentoAutomatico
+      ? '🔁 Automatico'
+      : '✋ Manuale — ricordati di pagarlo';
+    return `<div class="avviso-riga ${cls}">
+      <span class="avviso-titolo">${escape(s.nome)} · rinnovo ${quando}</span>
+      <span class="avviso-nota">${nota}</span>
+    </div>`;
+  }).join('');
+}
+
+// Apre la finestra dei rinnovi (click sulla campanella): mostra SEMPRE, anche se vuota.
+function mostraAvvisi() {
+  const imminenti = serviziImminenti();
+  const contenuto = imminenti.length
+    ? htmlAvvisi(imminenti)
+    : '<p class="avviso-vuoto">Nessun rinnovo nei prossimi 15 giorni. 👍</p>';
+  apriModale({ titolo: 'Rinnovi in arrivo', messaggioHtml: contenuto, mostraAnnulla: false, testoConferma: 'Ho capito' });
+}
+
+// Avviso automatico all'apertura: una volta al giorno, solo se c'è qualcosa in arrivo.
+function avvisiRinnovo() {
+  const oggiKey = new Date().toISOString().slice(0, 10);
+  if (localStorage.getItem('organizer_avviso_giorno') === oggiKey) return; // già mostrato oggi
+  if (!serviziImminenti().length) return;
+  localStorage.setItem('organizer_avviso_giorno', oggiKey);
+  mostraAvvisi();
+}
+
+// Aggiorna il numerino sul campanello (nascosto se non ci sono rinnovi in arrivo).
+function aggiornaCampanella() {
+  const n = serviziImminenti().length;
+  const badge = document.getElementById('campanellaBadge');
+  badge.textContent = n;
+  badge.hidden = n === 0;
+}
 
 /*
  * Legge i campi del form, costruisce il servizio, lo valida e lo salva.
@@ -441,6 +504,9 @@ function inizializza() {
       await Store.elimina(idDel); await ricarica();
     }
   });
+
+  // Campanella in alto a destra: apre la finestra dei rinnovi in arrivo.
+  document.getElementById('campanella').addEventListener('click', mostraAvvisi);
 
   // Categorie: pulsante "+" e click su "Elimina" (delegato).
   document.getElementById('aggiungiCategoria').addEventListener('click', aggiungiCategoria);

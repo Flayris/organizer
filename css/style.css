@@ -45,7 +45,46 @@ body {
 
 /* ===================== HEADER ===================== */
 header {
+  position: relative;            /* riferimento per la campanella in alto a destra */
   padding: 22px 28px 16px;
+}
+
+/* Campanella in alto a destra: pulsante tondo "di vetro" con badge del conteggio. */
+#campanella {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  background: var(--vetro);
+  border: 1px solid var(--vetro-bordo);
+  border-radius: 50%;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+#campanella:hover { border-color: var(--vetro-bordo-on); box-shadow: var(--glow); }
+#campanella:active { transform: translateY(1px); }
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #fb7185, #ef4444);
+  border: 2px solid var(--bg);
+  border-radius: 999px;
 }
 header h1 {
   margin: 0 0 10px;
@@ -284,6 +323,20 @@ button[type="submit"] { grid-column: 1 / -1; }
   box-shadow: 0 0 24px rgba(56, 130, 246, 0.18);
 }
 
+/* Rinnovo vicino (entro 15 giorni, fino al giorno del rinnovo):
+   alone VERDE se pagamento automatico, GIALLO se manuale. */
+.servizio.glow-auto {
+  border-color: rgba(52, 211, 153, 0.65);
+  box-shadow: 0 0 22px rgba(52, 211, 153, 0.45), inset 0 0 0 1px rgba(52, 211, 153, 0.25);
+}
+.servizio.glow-manuale {
+  border-color: rgba(251, 191, 110, 0.7);
+  box-shadow: 0 0 22px rgba(251, 191, 110, 0.5), inset 0 0 0 1px rgba(251, 191, 110, 0.3);
+}
+/* L'alone resta visibile anche al passaggio del mouse. */
+.servizio.glow-auto:hover { box-shadow: 0 0 28px rgba(52, 211, 153, 0.6); }
+.servizio.glow-manuale:hover { box-shadow: 0 0 28px rgba(251, 191, 110, 0.65); }
+
 /* Blocco informazioni a sinistra (occupa lo spazio disponibile). */
 .servizio-info { flex: 1; min-width: 0; }
 /* Riga principale: nome + etichette + prezzo, tutto in linea. */
@@ -386,6 +439,9 @@ button[type="submit"] { grid-column: 1 / -1; }
 
   .schede { padding: 6px 16px 0; flex-wrap: wrap; }
   .scheda { padding: 9px 16px; font-size: .85rem; }
+
+  /* Campanella un po' più vicina al bordo sui telefoni. */
+  #campanella { top: 14px; right: 16px; width: 40px; height: 40px; font-size: 1.1rem; }
 
   main { padding: 14px 16px 28px; gap: 14px; }
   .pannello { padding: 16px; border-radius: 16px; }
@@ -520,12 +576,35 @@ button[type="submit"] { grid-column: 1 / -1; }
   box-shadow: 0 20px 60px rgba(0,0,0,0.5), var(--glow);
 }
 .modale-pannello h3 { margin: 0 0 8px; font-size: 1.05rem; color: #fff; }
-.modale-pannello p {
+#modaleMessaggio {
   margin: 0 0 14px;
   color: var(--tenue);
   font-size: .9rem;
-  white-space: pre-line;         /* rispetta gli a-capo dei messaggi */
+  white-space: pre-line;         /* rispetta gli a-capo dei messaggi di testo */
 }
+
+/* Righe dell'avviso "Rinnovi in arrivo": verdi (automatico) o gialle (manuale). */
+.avviso-riga {
+  white-space: normal;
+  border-radius: 12px;
+  border: 1px solid;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+}
+.avviso-riga:last-child { margin-bottom: 0; }
+.avviso-titolo { display: block; font-weight: 600; color: #fff; }
+.avviso-nota { display: block; font-size: .78rem; margin-top: 2px; }
+.avviso-riga.auto {
+  background: rgba(52, 211, 153, 0.12);
+  border-color: rgba(52, 211, 153, 0.45);
+}
+.avviso-riga.auto .avviso-nota { color: #6ee7b7; }
+.avviso-riga.manuale {
+  background: rgba(251, 191, 110, 0.12);
+  border-color: rgba(251, 191, 110, 0.45);
+}
+.avviso-riga.manuale .avviso-nota { color: #fbbf6e; }
+.avviso-vuoto { white-space: normal; margin: 0; color: var(--tenue); }
 .modale-pannello input { width: 100%; margin-bottom: 18px; }
 .modale-azioni { display: flex; justify-content: flex-end; gap: 10px; }
 .modale-azioni button { padding: 9px 20px; font-size: .9rem; }

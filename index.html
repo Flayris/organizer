@@ -13,7 +13,7 @@
 
   <!-- Il "?v=" obbliga il browser a riscaricare i file quando cambiano,
        evitando che resti su versioni vecchie in cache. Si alza a ogni modifica. -->
-  <link rel="stylesheet" href="css/style.css?v=16">
+  <link rel="stylesheet" href="css/style.css?v=20">
 </head>
 <body>
   <!--
@@ -22,6 +22,11 @@
     la costruiremo dopo, quando saremo sicuri che tutto gira.
   -->
   <header>
+    <!-- Campanella in alto a destra: mostra il numero di rinnovi in arrivo e,
+         al click, apre la finestra con l'elenco. -->
+    <button id="campanella" type="button" aria-label="Rinnovi in arrivo" title="Rinnovi in arrivo">
+      🔔<span id="campanellaBadge" class="badge" hidden>0</span>
+    </button>
     <h1>Organizer Servizi</h1>
     <div class="totali">
       <span>Servizi: <strong id="conteggio">0</strong></span>
@@ -167,7 +172,7 @@
   <div id="modale" class="modale">
     <div class="modale-pannello" role="dialog" aria-modal="true">
       <h3 id="modaleTitolo"></h3>
-      <p id="modaleMessaggio"></p>
+      <div id="modaleMessaggio"></div>
       <input id="modaleInput" type="text">
       <div class="modale-azioni">
         <button id="modaleAnnulla" type="button" class="btn-vetro">Annulla</button>
@@ -177,9 +182,9 @@
   </div>
 
   <!-- Ordine importante: prima i dati/logica, poi l'app che li usa. -->
-  <script src="js/model.js?v=16"></script>
-  <script src="js/store.js?v=16"></script>
-  <script src="js/app.js?v=16"></script>
+  <script src="js/model.js?v=20"></script>
+  <script src="js/store.js?v=20"></script>
+  <script src="js/app.js?v=20"></script>
 
   <!-- Registra il service worker: abilita installazione e uso offline. -->
   <script>

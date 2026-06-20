@@ -162,6 +162,37 @@
     return conta;
   }
 
+  /*
+   * Quanti giorni mancano al rinnovo di un servizio, a partire da oggi.
+   *   > 0  -> rinnovo futuro (es. 5 = tra 5 giorni)
+   *   = 0  -> rinnova oggi
+   *   < 0  -> data già passata
+   *   null -> nessuna data di rinnovo impostata
+   * Confronto solo per GIORNO (mezzanotte locale), così non sballa per le ore.
+   */
+  function giorniAlRinnovo(dataRinnovo, oggi = new Date()) {
+    if (!dataRinnovo) return null;
+    const p = String(dataRinnovo).slice(0, 10).split('-').map(Number);
+    if (p.length !== 3 || p.some(isNaN)) return null;
+    const rinnovo = new Date(p[0], p[1] - 1, p[2]);
+    const base = new Date(oggi.getFullYear(), oggi.getMonth(), oggi.getDate());
+    return Math.round((rinnovo - base) / 86400000);
+  }
+
+  /*
+   * Ordina i servizi per vicinanza al rinnovo: prima i più vicini (oggi/futuro),
+   * poi quelli con data già passata (i più recenti prima), infine quelli senza data.
+   */
+  function ordinaPerRinnovo(servizi, oggi = new Date()) {
+    const chiave = (s) => {
+      const g = giorniAlRinnovo(s.dataRinnovo, oggi);
+      if (g === null) return Infinity;       // senza data: in fondo
+      if (g < 0) return 100000 - g;          // già passata: in fondo (recenti più in alto)
+      return g;                              // oggi/futuro: prima il più vicino
+    };
+    return [...servizi].sort((a, b) => chiave(a) - chiave(b));
+  }
+
   // Genera un id semplice e univoco a sufficienza per un uso personale.
   function generaId() {
     return 'srv_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -173,5 +204,6 @@
     creaServizio, validaServizio, etichettaTipo,
     costoMensile, costoAnnuale, calcolaTotali,
     filtraServizi, categorieDa, contaCategorie,
+    giorniAlRinnovo, ordinaPerRinnovo,
   };
 })();
