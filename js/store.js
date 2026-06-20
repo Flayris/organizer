@@ -95,6 +95,11 @@ class LocalStore {
     localStorage.setItem(this.chiaveCat, JSON.stringify(lista));
   }
 
+  // Senza cloud non c'è un mittente push: tiene solo traccia in locale.
+  async salvaIscrizione(sub) {
+    localStorage.setItem('organizer_iscrizione', JSON.stringify(sub || {}));
+  }
+
   // Scrittura grezza su localStorage. Privato (per convenzione, con "_").
   _scrivi(lista) {
     localStorage.setItem(this.chiave, JSON.stringify(lista));
@@ -154,6 +159,11 @@ class SheetStore {
   // Toglie una categoria dal foglio (NON tocca i servizi).
   async eliminaCategoria(nome) {
     await this._invia({ azione: 'eliminaCategoria', nome });
+  }
+
+  // Registra un'iscrizione alle notifiche push (un dispositivo).
+  async salvaIscrizione(sub) {
+    await this._invia({ azione: 'salvaIscrizione', sub });
   }
 
   // Invio grezzo di una scrittura (POST). Privato (per convenzione, con "_").

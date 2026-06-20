@@ -16,6 +16,10 @@
 // ⚠️ CAMBIA QUESTA FRASE con una tua (servirà identica anche nell'app).
 const SEGRETO = 'cambiami-con-una-frase-segreta';
 
+// Secondo segreto, SOLO per leggere/eliminare le iscrizioni alle notifiche push.
+// NON va messo nell'app (resta tra Apps Script e il GitHub Action che invia le push).
+const SEGRETO_PUSH = 'cambiami-con-un-secondo-segreto';
+
 // Colonne del foglio, in ordine. Corrispondono ai campi di un servizio nell'app.
 // NB: 'pagamentoAutomatico' e 'dataRinnovo' sono in CODA, così le colonne dei dati
 // già esistenti non si spostano (i servizi vecchi restano leggibili).
@@ -135,6 +139,48 @@ function eliminaCategoria(nome) {
   }
 }
 
+// ===================== ISCRIZIONI NOTIFICHE PUSH =====================
+// Ogni dispositivo che attiva le notifiche salva qui la sua "iscrizione" (un
+// indirizzo a cui mandare le push). Vivono nel foglio "Iscrizioni".
+
+// Restituisce il foglio "Iscrizioni", creandolo (con le intestazioni) se non esiste.
+function foglioIscr() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName('Iscrizioni');
+  if (!sh) sh = ss.insertSheet('Iscrizioni');
+  if (sh.getLastRow() === 0) sh.appendRow(['endpoint', 'p256dh', 'auth', 'creatoIl']);
+  return sh;
+}
+
+// Salva un'iscrizione (deduplica per endpoint). Usata dall'app col token normale.
+function salvaIscrizione(sub) {
+  if (!sub || !sub.endpoint) return;
+  const k = sub.keys || {};
+  const sh = foglioIscr();
+  const endpoints = leggiIscrizioni().map((s) => s.endpoint);
+  if (endpoints.indexOf(sub.endpoint) >= 0) return; // già presente
+  sh.appendRow([sub.endpoint, k.p256dh || '', k.auth || '', new Date().toISOString()]);
+}
+
+// Legge tutte le iscrizioni come oggetti pronti per web-push.
+function leggiIscrizioni() {
+  const sh = foglioIscr();
+  return sh.getDataRange().getValues().slice(1)
+    .filter((r) => r[0])
+    .map((r) => ({ endpoint: String(r[0]), keys: { p256dh: String(r[1]), auth: String(r[2]) } }));
+}
+
+// Elimina un'iscrizione (quando il dispositivo non è più raggiungibile).
+function eliminaIscrizione(endpoint) {
+  const sh = foglioIscr();
+  const n = Math.max(sh.getLastRow() - 1, 0);
+  if (n === 0) return;
+  const valori = sh.getRange(2, 1, n, 1).getValues();
+  for (let i = n - 1; i >= 0; i--) {
+    if (String(valori[i][0]) === String(endpoint)) sh.deleteRow(i + 2);
+  }
+}
+
 // Sostituisce TUTTI i servizi (serve all'importazione di un backup).
 function sostituisci(lista) {
   const sh = foglio();
@@ -164,6 +210,14 @@ function doPost(e) {
   try { req = JSON.parse(e.postData.contents); }
   catch (err) { return rispondi({ errore: 'richiesta illeggibile' }); }
 
+  // Azioni "admin push" (leggere/eliminare iscrizioni): autorizzate dal SECONDO
+  // segreto, perché le usa solo il mittente (GitHub Action), non l'app.
+  if (req.azione === 'iscrizioni' || req.azione === 'eliminaIscrizione') {
+    if ((req.token || '') !== SEGRETO_PUSH) return rispondi({ errore: 'non autorizzato' });
+    if (req.azione === 'iscrizioni') return rispondi({ ok: true, iscrizioni: leggiIscrizioni() });
+    eliminaIscrizione(req.endpoint); return rispondi({ ok: true });
+  }
+
   if ((req.token || '') !== SEGRETO) return rispondi({ errore: 'non autorizzato' });
 
   switch (req.azione) {
@@ -174,6 +228,7 @@ function doPost(e) {
     case 'categorie':        return rispondi({ ok: true, categorie: leggiCategorie() });
     case 'salvaCategoria':   salvaCategoria(req.nome);        return rispondi({ ok: true });
     case 'eliminaCategoria': eliminaCategoria(req.nome);      return rispondi({ ok: true });
+    case 'salvaIscrizione':  salvaIscrizione(req.sub);        return rispondi({ ok: true });
     default:                 return rispondi({ errore: 'azione sconosciuta' });
   }
 }

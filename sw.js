@@ -8,7 +8,7 @@
  *    css e js cambiano indirizzo con "?v=N" a ogni modifica, quindi si aggiornano.
  *  - Le chiamate al foglio Google: SEMPRE dalla rete, mai salvate (dati live).
  */
-const CACHE = 'organizer-v21';
+const CACHE = 'organizer-v22';
 const APP_SHELL = [
   './',
   './index.html',
@@ -31,6 +31,20 @@ self.addEventListener('activate', (e) => {
       .then((chiavi) => Promise.all(chiavi.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+// Arrivo di una notifica push (anche ad app CHIUSA): mostra la notifica.
+self.addEventListener('push', (e) => {
+  let dati = {};
+  try { dati = e.data ? e.data.json() : {}; }
+  catch (err) { dati = { titolo: 'Organizer', corpo: e.data ? e.data.text() : '' }; }
+  const titolo = dati.titolo || 'Rinnovi in arrivo';
+  e.waitUntil(self.registration.showNotification(titolo, {
+    body: dati.corpo || '',
+    icon: './icons/icon-192.png',
+    badge: './icons/icon-192.png',
+    tag: 'rinnovi',
+  }));
 });
 
 // Tocco sulla notifica di sistema: porta in primo piano l'app (o la apre).

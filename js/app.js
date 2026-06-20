@@ -14,6 +14,9 @@ const Store = window.Store;
 // Quanti giorni prima del rinnovo far comparire glow e avvisi.
 const SOGLIA_RINNOVO = 15;
 
+// Chiave pubblica VAPID per le notifiche push (è pubblica per natura: nessun segreto qui).
+const VAPID_PUBLIC = 'BDNj-qiqXigBFooqUSfL4bVMISEEg6e7NiV3ChaYeycmqVgIB_9VNl3yMcGkJsBzU8A_Mmro0eGU1R2OvOGEXq8';
+
 // Stato dei filtri attualmente attivi nell'interfaccia.
 let filtri = { testo: '', categoria: 'tutte', tipo: 'tutti' };
 
@@ -326,12 +329,47 @@ function mostraAvvisi() {
 }
 
 // Click sulla campanella: la prima volta chiede il permesso per le notifiche
-// di sistema (serve un gesto dell'utente), poi apre la finestra dei rinnovi.
+// di sistema (serve un gesto dell'utente), iscrive ai push, poi apre l'elenco.
 async function apriNotifiche() {
   if ('Notification' in window && Notification.permission === 'default') {
     try { await Notification.requestPermission(); } catch { /* ignora */ }
   }
+  if ('Notification' in window && Notification.permission === 'granted') {
+    iscriviPush();
+  }
   mostraAvvisi();
+}
+
+// Converte la chiave VAPID (base64url) nel formato binario richiesto da subscribe().
+function base64UrlToUint8Array(base64) {
+  const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+  const b64 = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(b64);
+  return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+}
+
+/*
+ * Iscrive QUESTO dispositivo alle notifiche push e registra l'iscrizione nel
+ * foglio (così il mittente — GitHub Action — sa a chi inviare). Sicuro da
+ * richiamare più volte: riusa l'iscrizione esistente e il foglio deduplica.
+ */
+async function iscriviPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: base64UrlToUint8Array(VAPID_PUBLIC),
+      });
+    }
+    await Store.salvaIscrizione(sub.toJSON());
+    localStorage.setItem('organizer_push_iscritto', '1');
+  } catch (err) {
+    console.warn('Iscrizione push non riuscita:', err);
+  }
 }
 
 /*
@@ -559,6 +597,10 @@ function inizializza() {
 
   // Campanella in alto a destra: chiede il permesso notifiche (1ª volta) e apre l'elenco.
   document.getElementById('campanella').addEventListener('click', apriNotifiche);
+
+  // Se le notifiche erano già state attivate, ri-registra l'iscrizione push
+  // (utile se l'iscrizione è scaduta o non era ancora finita nel foglio).
+  if ('Notification' in window && Notification.permission === 'granted') iscriviPush();
 
   // Categorie: pulsante "+" e click su "Elimina" (delegato).
   document.getElementById('aggiungiCategoria').addEventListener('click', aggiungiCategoria);
