@@ -315,19 +315,71 @@ function htmlAvvisi(imminenti) {
 // Apre la finestra dei rinnovi (click sulla campanella): mostra SEMPRE, anche se vuota.
 function mostraAvvisi() {
   const imminenti = serviziImminenti();
-  const contenuto = imminenti.length
+  let contenuto = imminenti.length
     ? htmlAvvisi(imminenti)
     : '<p class="avviso-vuoto">Nessun rinnovo nei prossimi 15 giorni. 👍</p>';
+  // Se le notifiche di sistema sono bloccate, avvisa che vanno sbloccate dal browser.
+  if ('Notification' in window && Notification.permission === 'denied') {
+    contenuto += '<p class="avviso-vuoto">🔕 Le notifiche di sistema sono bloccate: sbloccale dalle impostazioni del browser per riceverle sul telefono.</p>';
+  }
   apriModale({ titolo: 'Rinnovi in arrivo', messaggioHtml: contenuto, mostraAnnulla: false, testoConferma: 'Ho capito' });
 }
 
+// Click sulla campanella: la prima volta chiede il permesso per le notifiche
+// di sistema (serve un gesto dell'utente), poi apre la finestra dei rinnovi.
+async function apriNotifiche() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    try { await Notification.requestPermission(); } catch { /* ignora */ }
+  }
+  mostraAvvisi();
+}
+
+/*
+ * Mostra una notifica di SISTEMA (quella che compare fuori dall'app, sul telefono).
+ * Usa il service worker: è il modo che funziona anche su Android/iPhone, a differenza
+ * del vecchio `new Notification()` che sui cellulari spesso è vietato.
+ */
+async function notificaSistema(titolo, corpo) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    const reg = navigator.serviceWorker && await navigator.serviceWorker.ready;
+    if (reg && reg.showNotification) {
+      reg.showNotification(titolo, {
+        body: corpo, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', tag: 'rinnovi',
+      });
+    } else if (typeof Notification === 'function') {
+      new Notification(titolo, { body: corpo, icon: 'icons/icon-192.png' }); // ripiego (desktop)
+    }
+  } catch { /* niente notifica se qualcosa va storto */ }
+}
+
+// Trasforma l'elenco dei rinnovi imminenti in una notifica di sistema riassuntiva.
+function notificaRinnovi(imminenti) {
+  if (!imminenti.length) return;
+  const quando = (g) => (g === 0 ? 'oggi' : (g === 1 ? 'domani' : `tra ${g} giorni`));
+  let titolo, corpo;
+  if (imminenti.length === 1) {
+    const { s, g } = imminenti[0];
+    titolo = `Rinnovo: ${s.nome}`;
+    corpo = `${s.pagamentoAutomatico ? '🔁 Automatico' : '✋ Manuale'} · rinnova ${quando(g)}`;
+  } else {
+    titolo = `${imminenti.length} rinnovi in arrivo`;
+    corpo = imminenti.slice(0, 3).map(({ s, g }) => `${s.nome} (${quando(g)})`).join(', ')
+      + (imminenti.length > 3 ? '…' : '');
+  }
+  notificaSistema(titolo, corpo);
+}
+
 // Avviso automatico all'apertura: una volta al giorno, solo se c'è qualcosa in arrivo.
+// Mostra sia la finestra interna sia la notifica di sistema (se il permesso è dato).
 function avvisiRinnovo() {
   const oggiKey = new Date().toISOString().slice(0, 10);
   if (localStorage.getItem('organizer_avviso_giorno') === oggiKey) return; // già mostrato oggi
-  if (!serviziImminenti().length) return;
+  const imminenti = serviziImminenti();
+  if (!imminenti.length) return;
   localStorage.setItem('organizer_avviso_giorno', oggiKey);
-  mostraAvvisi();
+  apriModale({ titolo: 'Rinnovi in arrivo', messaggioHtml: htmlAvvisi(imminenti), mostraAnnulla: false, testoConferma: 'Ho capito' });
+  notificaRinnovi(imminenti);
 }
 
 // Aggiorna il numerino sul campanello (nascosto se non ci sono rinnovi in arrivo).
@@ -505,8 +557,8 @@ function inizializza() {
     }
   });
 
-  // Campanella in alto a destra: apre la finestra dei rinnovi in arrivo.
-  document.getElementById('campanella').addEventListener('click', mostraAvvisi);
+  // Campanella in alto a destra: chiede il permesso notifiche (1ª volta) e apre l'elenco.
+  document.getElementById('campanella').addEventListener('click', apriNotifiche);
 
   // Categorie: pulsante "+" e click su "Elimina" (delegato).
   document.getElementById('aggiungiCategoria').addEventListener('click', aggiungiCategoria);

@@ -8,7 +8,7 @@
  *    css e js cambiano indirizzo con "?v=N" a ogni modifica, quindi si aggiornano.
  *  - Le chiamate al foglio Google: SEMPRE dalla rete, mai salvate (dati live).
  */
-const CACHE = 'organizer-v20';
+const CACHE = 'organizer-v21';
 const APP_SHELL = [
   './',
   './index.html',
@@ -30,6 +30,19 @@ self.addEventListener('activate', (e) => {
     caches.keys()
       .then((chiavi) => Promise.all(chiavi.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
+  );
+});
+
+// Tocco sulla notifica di sistema: porta in primo piano l'app (o la apre).
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((finestre) => {
+      for (const f of finestre) {
+        if ('focus' in f) return f.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow('./');
+    })
   );
 });
 
