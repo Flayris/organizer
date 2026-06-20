@@ -14,7 +14,7 @@
 import webpush from 'web-push';
 
 // --- Valori PUBBLICI (possono stare in chiaro) ---
-const URL = 'https://script.google.com/macros/s/AKfycbwfniMNWa0hQheGN-ECiNl3WuEo6xuzImzXMvVL77rn-vJjGjrG279qrDMHMaJPE8DS/exec';
+const URL = 'https://script.google.com/macros/s/AKfycbyfyz7USG4Hwjspbava37AZl7hNKGlzijxIxKi1qWLh138WElq5p33-ML-vnnrwFMes/exec';
 const VAPID_PUBLIC = 'BDNj-qiqXigBFooqUSfL4bVMISEEg6e7NiV3ChaYeycmqVgIB_9VNl3yMcGkJsBzU8A_Mmro0eGU1R2OvOGEXq8';
 const VAPID_SUBJECT = 'mailto:0ics.srl@gmail.com';
 const SOGLIE = [15, 5, 1, 0]; // giorni al rinnovo per cui inviare la notifica
