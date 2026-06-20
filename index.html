@@ -13,7 +13,7 @@
 
   <!-- Il "?v=" obbliga il browser a riscaricare i file quando cambiano,
        evitando che resti su versioni vecchie in cache. Si alza a ogni modifica. -->
-  <link rel="stylesheet" href="css/style.css?v=25">
+  <link rel="stylesheet" href="css/style.css?v=26">
 </head>
 <body>
   <!--
@@ -45,16 +45,17 @@
   <input type="radio" name="vista" id="tab-backup" hidden>
   <!-- Ogni scheda ha SIA l'emoji (mostrata su PC) SIA l'icona SVG (mostrata sul
        telefono): è la CSS a scegliere quale far vedere in base alla larghezza. -->
+  <!-- Ogni scheda ha: emoji (PC) + icona SVG (telefono) + testo (nascosto sul telefono). -->
   <nav class="schede">
     <label class="scheda" for="tab-servizi">
-      <span class="ico-emoji">📋</span><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> I miei servizi</label>
+      <span class="ico-emoji">📋</span><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span class="testo-scheda">I miei servizi</span></label>
     <label class="scheda" for="tab-categorie">
-      <span class="ico-emoji">📂</span><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Categorie</label>
+      <span class="ico-emoji">📂</span><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span class="testo-scheda">Categorie</span></label>
     <label class="scheda" for="tab-nuovo">
-      <span class="ico-emoji">➕</span><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nuovo servizio</label>
+      <span class="ico-emoji">➕</span><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="testo-scheda">Nuovo servizio</span></label>
     <!-- Backup spinto a destra (vedi margin-left:auto nel CSS). -->
     <label class="scheda" for="tab-backup">
-      <span class="ico-emoji">💾</span><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Backup</label>
+      <span class="ico-emoji">💾</span><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="testo-scheda">Backup</span></label>
   </nav>
 
   <main>
@@ -189,9 +190,9 @@
   </div>
 
   <!-- Ordine importante: prima i dati/logica, poi l'app che li usa. -->
-  <script src="js/model.js?v=25"></script>
-  <script src="js/store.js?v=25"></script>
-  <script src="js/app.js?v=25"></script>
+  <script src="js/model.js?v=26"></script>
+  <script src="js/store.js?v=26"></script>
+  <script src="js/app.js?v=26"></script>
 
   <!-- Registra il service worker: abilita installazione e uso offline. -->
   <script>

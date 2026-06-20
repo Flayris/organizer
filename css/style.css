@@ -139,6 +139,11 @@ header small { font-size: .72rem; }
 .scheda {
   cursor: pointer;
   user-select: none;
+  /* In riga: icona e testo affiancati (i <label> di default andrebbero in colonna). */
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   font-size: .9rem;
   color: var(--tenue);
   background: var(--vetro);
@@ -154,10 +159,8 @@ header small { font-size: .72rem; }
 
 /* Icone delle schede: linea pulita in ciano (vive), bianche quando la scheda è attiva. */
 .scheda svg {
-  width: 17px;
-  height: 17px;
-  margin-right: 7px;
-  vertical-align: -3px;
+  width: 18px;
+  height: 18px;
   color: var(--ciano);
   flex-shrink: 0;
 }
@@ -465,9 +468,12 @@ button[type="submit"] { grid-column: 1 / -1; }
   .schede { padding: 6px var(--px) 0; flex-wrap: wrap; }
   .scheda { padding: 9px 16px; font-size: .85rem; }
 
-  /* Sul telefono: via le emoji, dentro le icone SVG in tinta. */
+  /* Sul telefono: solo icone SVG (niente emoji, niente testo) per non riempire troppo. */
   .ico-emoji { display: none; }
   .ico-svg { display: inline-block; }
+  .testo-scheda { display: none; }
+  /* Schede icona-sola: più compatte e quadrate. */
+  .scheda { padding: 9px 13px; }
 
   /* Campanella un po' più vicina al bordo sui telefoni. */
   #campanella { top: 14px; right: 16px; width: 40px; height: 40px; font-size: 1.1rem; }
