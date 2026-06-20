@@ -13,7 +13,7 @@
 
   <!-- Il "?v=" obbliga il browser a riscaricare i file quando cambiano,
        evitando che resti su versioni vecchie in cache. Si alza a ogni modifica. -->
-  <link rel="stylesheet" href="css/style.css?v=11">
+  <link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
   <!--
@@ -30,14 +30,19 @@
     </div>
   </header>
 
-  <!-- Due "interruttori" radio nascosti: decidono quale vista è mostrata.
+  <!-- "Interruttori" radio nascosti: decidono quale vista è mostrata.
        Le schede qui sotto sono <label> collegate a questi radio, così cliccarle
        cambia schermata DA SOLE (lo fa il browser, senza JavaScript). -->
   <input type="radio" name="vista" id="tab-servizi" checked hidden>
-  <input type="radio" name="vista" id="tab-gestione" hidden>
+  <input type="radio" name="vista" id="tab-categorie" hidden>
+  <input type="radio" name="vista" id="tab-nuovo" hidden>
+  <input type="radio" name="vista" id="tab-backup" hidden>
   <nav class="schede">
     <label class="scheda" for="tab-servizi">📋 I miei servizi</label>
-    <label class="scheda" for="tab-gestione">➕ Inserisci / Backup</label>
+    <label class="scheda" for="tab-categorie">📂 Categorie</label>
+    <label class="scheda" for="tab-nuovo">➕ Nuovo servizio</label>
+    <!-- Backup spinto a destra (vedi margin-left:auto nel CSS). -->
+    <label class="scheda" for="tab-backup">💾 Backup</label>
   </nav>
 
   <main>
@@ -66,8 +71,16 @@
       </section>
     </div>
 
-    <!-- ============ VISTA 2: INSERISCI / BACKUP ============ -->
-    <div id="vista-gestione" class="vista">
+    <!-- ============ VISTA 2: CATEGORIE (placeholder, riempita al punto 1) ============ -->
+    <div id="vista-categorie" class="vista">
+      <section class="pannello">
+        <h2>Categorie</h2>
+        <p class="aiuto">La gestione delle categorie arriverà qui (aggiungi, conta servizi, elimina).</p>
+      </section>
+    </div>
+
+    <!-- ============ VISTA 3: NUOVO SERVIZIO ============ -->
+    <div id="vista-nuovo" class="vista">
     <!-- FORM: aggiungi / modifica un servizio -->
     <section class="pannello">
       <h2>Aggiungi / modifica servizio</h2>
@@ -111,7 +124,10 @@
         <button type="submit">Salva</button>
       </form>
     </section>
+    </div><!-- fine vista-nuovo -->
 
+    <!-- ============ VISTA 4: BACKUP (Scarica PDF) ============ -->
+    <div id="vista-backup" class="vista">
     <!-- SCARICA PDF -->
     <section class="pannello">
       <h2>Scarica PDF</h2>
@@ -126,7 +142,7 @@
         <button id="scaricaPdf" type="button">Scarica PDF</button>
       </div>
     </section>
-    </div><!-- fine vista-gestione -->
+    </div><!-- fine vista-backup -->
   </main>
 
   <!-- Documento per il PDF: invisibile a schermo, riempito da app.js e
@@ -134,9 +150,9 @@
   <div id="reportStampa" aria-hidden="true"></div>
 
   <!-- Ordine importante: prima i dati/logica, poi l'app che li usa. -->
-  <script src="js/model.js?v=11"></script>
-  <script src="js/store.js?v=11"></script>
-  <script src="js/app.js?v=11"></script>
+  <script src="js/model.js?v=12"></script>
+  <script src="js/store.js?v=12"></script>
+  <script src="js/app.js?v=12"></script>
 
   <!-- Registra il service worker: abilita installazione e uso offline. -->
   <script>

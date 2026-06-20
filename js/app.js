@@ -215,7 +215,13 @@ async function scaricaPdf() {
  * CSS e non passa di qui. Qui basta selezionare l'interruttore radio giusto.
  */
 function mostraVista(nome) {
-  const id = nome === 'gestione' ? 'tab-gestione' : 'tab-servizi';
+  // Mappa il nome logico della vista al rispettivo interruttore radio.
+  const id = {
+    servizi: 'tab-servizi',
+    categorie: 'tab-categorie',
+    nuovo: 'tab-nuovo',
+    backup: 'tab-backup',
+  }[nome] || 'tab-servizi';
   const radio = document.getElementById(id);
   if (radio) radio.checked = true;
 }
@@ -243,7 +249,7 @@ function inizializza() {
   document.getElementById('lista').addEventListener('click', async (e) => {
     const idMod = e.target.getAttribute('data-modifica');
     const idDel = e.target.getAttribute('data-elimina');
-    if (idMod) { modifica(idMod); mostraVista('gestione'); }
+    if (idMod) { modifica(idMod); mostraVista('nuovo'); }
     if (idDel && confirm('Eliminare questo servizio?')) {
       await Store.elimina(idDel); await aggiorna();
     }

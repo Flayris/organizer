@@ -8,7 +8,7 @@
  *    css e js cambiano indirizzo con "?v=N" a ogni modifica, quindi si aggiornano.
  *  - Le chiamate al foglio Google: SEMPRE dalla rete, mai salvate (dati live).
  */
-const CACHE = 'organizer-v11';
+const CACHE = 'organizer-v12';
 const APP_SHELL = [
   './',
   './index.html',

@@ -107,9 +107,14 @@ header small { font-size: .72rem; }
 .scheda:hover { color: var(--testo); border-color: var(--vetro-bordo-on); }
 .scheda:active { transform: translateY(1px); }
 
+/* Backup spinto tutto a destra, staccato dagli altri tab. */
+.scheda[for="tab-backup"] { margin-left: auto; }
+
 /* Scheda attiva: pillola con gradiente pieno e bagliore (in pura CSS). */
 body:has(#tab-servizi:checked) .scheda[for="tab-servizi"],
-body:has(#tab-gestione:checked) .scheda[for="tab-gestione"] {
+body:has(#tab-categorie:checked) .scheda[for="tab-categorie"],
+body:has(#tab-nuovo:checked) .scheda[for="tab-nuovo"],
+body:has(#tab-backup:checked) .scheda[for="tab-backup"] {
   color: #fff;
   background: var(--grad);
   border-color: transparent;
@@ -123,9 +128,15 @@ main {
   padding: 18px 28px 32px;
 }
 .vista { display: grid; gap: 18px; }
-#vista-gestione { display: none; }
-body:has(#tab-gestione:checked) #vista-servizi { display: none; }
-body:has(#tab-gestione:checked) #vista-gestione { display: grid; }
+/* Di default si vede solo "I miei servizi"; le altre viste sono nascoste
+   finché la loro scheda non è selezionata (tutto in pura CSS). */
+#vista-categorie, #vista-nuovo, #vista-backup { display: none; }
+body:has(#tab-categorie:checked) #vista-servizi,
+body:has(#tab-nuovo:checked) #vista-servizi,
+body:has(#tab-backup:checked) #vista-servizi { display: none; }
+body:has(#tab-categorie:checked) #vista-categorie { display: grid; }
+body:has(#tab-nuovo:checked) #vista-nuovo { display: grid; }
+body:has(#tab-backup:checked) #vista-backup { display: grid; }
 
 /* ===================== PANNELLI DI VETRO ===================== */
 .pannello {
