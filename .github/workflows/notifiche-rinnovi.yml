@@ -1,0 +1,26 @@
+name: Notifiche rinnovi
+
+# Mittente delle notifiche push: gira ogni giorno e avvisa quando un servizio
+# rinnova tra 15 / 5 / 1 / 0 giorni. Si può anche lanciare a mano (Run workflow).
+on:
+  schedule:
+    - cron: '0 7 * * *'   # ~09:00 ora italiana (07:00 UTC)
+  workflow_dispatch: {}
+
+jobs:
+  invia:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Europe/Rome
+      APPS_SCRIPT_TOKEN: ${{ secrets.APPS_SCRIPT_TOKEN }}
+      SEGRETO_PUSH: ${{ secrets.SEGRETO_PUSH }}
+      VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Installa web-push
+        run: npm init -y >/dev/null 2>&1 && npm install web-push@^3 --no-audit --no-fund
+      - name: Invia le notifiche
+        run: node tools/invia-notifiche.mjs
