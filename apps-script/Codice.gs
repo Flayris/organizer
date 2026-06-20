@@ -17,8 +17,27 @@
 const SEGRETO = 'cambiami-con-una-frase-segreta';
 
 // Colonne del foglio, in ordine. Corrispondono ai campi di un servizio nell'app.
+// NB: 'pagamentoAutomatico' e 'dataRinnovo' sono in CODA, così le colonne dei dati
+// già esistenti non si spostano (i servizi vecchi restano leggibili).
 const INTESTAZIONI = ['id', 'nome', 'tipo', 'tipoAltro', 'categoria',
-                      'costo', 'frequenza', 'descrizione', 'creatoIl', 'modificatoIl'];
+                      'costo', 'frequenza', 'descrizione', 'creatoIl', 'modificatoIl',
+                      'pagamentoAutomatico', 'dataRinnovo'];
+
+// Converte una cella in booleano (gestisce TRUE/FALSE, testo, numeri).
+function aBool(v) {
+  return v === true || v === 'TRUE' || v === 'true' || v === 1;
+}
+
+// Converte una cella data in stringa 'AAAA-MM-GG' ('' se vuota). Se il foglio l'ha
+// interpretata come Data (riconosciuta in modo robusto: a volte `instanceof Date`
+// fallisce in Apps Script), la formatta nel fuso del foglio per non sballare il giorno.
+function dataAStringa(v) {
+  if (!v) return '';
+  if (v instanceof Date || (typeof v === 'object' && typeof v.getTime === 'function')) {
+    return Utilities.formatDate(v, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  return String(v).slice(0, 10);
+}
 
 // Restituisce il foglio "Servizi", creandolo (con le intestazioni) se non esiste.
 function foglio() {
@@ -26,6 +45,9 @@ function foglio() {
   let sh = ss.getSheetByName('Servizi');
   if (!sh) sh = ss.insertSheet('Servizi');
   if (sh.getLastRow() === 0) sh.appendRow(INTESTAZIONI);
+  // Forza la colonna 'dataRinnovo' (la 12ª) a TESTO: così "2026-07-15" resta una
+  // stringa e il foglio non la trasforma in una Data (niente sorprese di fuso/formato).
+  sh.getRange(1, 12, sh.getMaxRows(), 1).setNumberFormat('@');
   return sh;
 }
 
@@ -37,6 +59,7 @@ function leggiTutti() {
     id: String(r[0]), nome: r[1], tipo: r[2], tipoAltro: r[3], categoria: r[4],
     costo: Number(r[5]) || 0, frequenza: r[6], descrizione: r[7],
     creatoIl: r[8], modificatoIl: r[9],
+    pagamentoAutomatico: aBool(r[10]), dataRinnovo: dataAStringa(r[11]),
   }));
 }
 
@@ -55,7 +78,8 @@ function trovaRiga(sh, id) {
 function salva(s) {
   const sh = foglio();
   const riga = [s.id, s.nome, s.tipo, s.tipoAltro, s.categoria,
-                s.costo, s.frequenza, s.descrizione, s.creatoIl, s.modificatoIl];
+                s.costo, s.frequenza, s.descrizione, s.creatoIl, s.modificatoIl,
+                aBool(s.pagamentoAutomatico), s.dataRinnovo || ''];
   const r = trovaRiga(sh, s.id);
   if (r > 0) sh.getRange(r, 1, 1, riga.length).setValues([riga]);
   else sh.appendRow(riga);
@@ -117,7 +141,8 @@ function sostituisci(lista) {
   const ultimo = sh.getLastRow();
   if (ultimo > 1) sh.getRange(2, 1, ultimo - 1, INTESTAZIONI.length).clearContent();
   const righe = (lista || []).map((s) => [s.id, s.nome, s.tipo, s.tipoAltro, s.categoria,
-                s.costo, s.frequenza, s.descrizione, s.creatoIl, s.modificatoIl]);
+                s.costo, s.frequenza, s.descrizione, s.creatoIl, s.modificatoIl,
+                aBool(s.pagamentoAutomatico), s.dataRinnovo || '']);
   if (righe.length) sh.getRange(2, 1, righe.length, INTESTAZIONI.length).setValues(righe);
 }
 

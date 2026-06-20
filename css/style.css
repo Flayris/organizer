@@ -185,6 +185,38 @@ input:focus, select:focus, textarea:focus {
 }
 select option { background: #0a0e1a; color: var(--testo); }
 
+/* Interruttore "Pagamento automatico": una levetta a gradiente quando attivo. */
+.interruttore {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.interruttore input { position: absolute; opacity: 0; pointer-events: none; }
+.interruttore .cursore {
+  position: relative;
+  width: 46px; height: 26px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--vetro-bordo);
+  border-radius: 999px;
+  transition: background .2s, border-color .2s;
+}
+.interruttore .cursore::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 3px;
+  transform: translateY(-50%);
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left .2s;
+}
+.interruttore input:checked + .cursore { background: var(--grad); border-color: transparent; }
+.interruttore input:checked + .cursore::after { left: 23px; }
+.interruttore input:focus-visible + .cursore { box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25); }
+.interruttore-testo { color: var(--testo); }
+
 /* "Tipo" + campo libero impilati (il campo appare solo con "altro"). */
 .campo-tipo { display: flex; flex-direction: column; gap: 8px; }
 #campoTipoAltro { display: none; }
@@ -286,6 +318,19 @@ button[type="submit"] { grid-column: 1 / -1; }
   border-radius: 999px;
   padding: 1px 9px;
 }
+/* Tag pagamento: verde = automatico (non te ne devi ricordare), ambra = manuale. */
+.tag-auto {
+  color: #6ee7b7;
+  background: rgba(110, 231, 183, 0.10);
+  border-color: rgba(110, 231, 183, 0.30);
+}
+.tag-manuale {
+  color: #fbbf6e;
+  background: rgba(251, 191, 110, 0.10);
+  border-color: rgba(251, 191, 110, 0.30);
+}
+/* Data di rinnovo accanto al prezzo. */
+.servizio .rinnovo { font-size: .8rem; color: var(--tenue); white-space: nowrap; }
 
 /* Azioni a destra: due pulsanti piccoli impilati verticalmente. */
 .servizio-azioni {

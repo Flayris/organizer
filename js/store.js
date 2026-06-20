@@ -173,7 +173,7 @@ class SheetStore {
 // === CONFIGURAZIONE DEL FOGLIO GOOGLE ===
 // url: l'indirizzo "/exec" della tua app web. segreto: la parola scelta nello script.
 const CONFIG_SHEET = {
-  url: 'https://script.google.com/macros/s/AKfycbzIF6u1e5YrK4Az8oi0I-OZn7SuqXp_9_uOvzW3FqHL1e2AYquWyPaDo5pjQVU9XHcH/exec',
+  url: 'https://script.google.com/macros/s/AKfycbwfniMNWa0hQheGN-ECiNl3WuEo6xuzImzXMvVL77rn-vJjGjrG279qrDMHMaJPE8DS/exec',
   segreto: 'organizer_laco_05',
 };
 

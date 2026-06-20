@@ -37,6 +37,12 @@
       categoria: dati.categoria || CATEGORIA_DEFAULT, // nome libero (vedi foglio Categorie)
       costo: typeof dati.costo === 'number' ? dati.costo : 0,
       frequenza: dati.frequenza || 'mensile',   // settimanale | mensile | annuale
+      // Pagamento automatico (true) o da ricordare a mano (false).
+      pagamentoAutomatico: dati.pagamentoAutomatico === true
+        || dati.pagamentoAutomatico === 'TRUE' || dati.pagamentoAutomatico === 'true'
+        || dati.pagamentoAutomatico === 1,
+      // Data del prossimo rinnovo, come stringa 'AAAA-MM-GG' ('' se non indicata).
+      dataRinnovo: dati.dataRinnovo ? String(dati.dataRinnovo).slice(0, 10) : '',
       descrizione: dati.descrizione || '',
       creatoIl: dati.creatoIl || ora,
       modificatoIl: ora,
@@ -57,6 +63,10 @@
     // La categoria è libera: basta che non sia vuota.
     if (!s.categoria || !String(s.categoria).trim()) errori.push('La categoria è obbligatoria.');
     if (!TIPI.includes(s.tipo)) errori.push('Tipo non valido.');
+    // La data di rinnovo è facoltativa, ma se c'è deve essere nel formato AAAA-MM-GG.
+    if (s.dataRinnovo && !/^\d{4}-\d{2}-\d{2}$/.test(s.dataRinnovo)) {
+      errori.push('Data di rinnovo non valida.');
+    }
     return errori;
   }
 

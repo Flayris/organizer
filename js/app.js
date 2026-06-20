@@ -6,7 +6,7 @@
  */
 
 const { creaServizio, validaServizio, etichettaTipo, calcolaTotali,
-        filtraServizi, costoMensile, categorieDa, contaCategorie,
+        filtraServizi, costoMensile, costoAnnuale, categorieDa, contaCategorie,
         CATEGORIA_DEFAULT, FREQUENZE, TIPI } = window.Model;
 const Store = window.Store;
 
@@ -22,6 +22,13 @@ let _categorie = []; // elenco COMPLETO (unione) calcolato con categorieDa
 // Formatta un numero come importo in euro (es. 12.5 -> "12,50 €").
 function euro(n) {
   return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(n);
+}
+
+// Formatta una data 'AAAA-MM-GG' in 'GG/MM/AAAA' (senza fusi orari, solo testo).
+function formattaData(iso) {
+  if (!iso) return '';
+  const [a, m, g] = iso.slice(0, 10).split('-');
+  return `${g}/${m}/${a}`;
 }
 
 /*
@@ -73,6 +80,8 @@ function render() {
             <strong>${escape(s.nome)}</strong>
             <span class="tag">${escape(etichettaTipo(s))}</span>
             <span class="tag">${escape(s.categoria)}</span>
+            <span class="tag ${s.pagamentoAutomatico ? 'tag-auto' : 'tag-manuale'}">${s.pagamentoAutomatico ? '🔁 Auto' : '✋ Manuale'}</span>
+            ${s.dataRinnovo ? `<span class="rinnovo">🗓 ${formattaData(s.dataRinnovo)}</span>` : ''}
             <span class="prezzo">${euro(s.costo)} / ${s.frequenza}</span>
             <em>(${euro(costoMensile(s))}/mese)</em>
           </div>
@@ -282,6 +291,8 @@ async function salvaDalForm(e) {
     categoria: f.categoria.value,
     costo: parseFloat(f.costo.value),
     frequenza: f.frequenza.value,
+    pagamentoAutomatico: f.pagamentoAutomatico.checked,
+    dataRinnovo: f.dataRinnovo.value,
     descrizione: f.descrizione.value,
   });
 
@@ -319,6 +330,8 @@ async function modifica(id) {
   f.categoria.value = s.categoria;
   f.costo.value = s.costo;
   f.frequenza.value = s.frequenza;
+  f.pagamentoAutomatico.checked = !!s.pagamentoAutomatico;
+  f.dataRinnovo.value = s.dataRinnovo || '';
   f.descrizione.value = s.descrizione;
 }
 
@@ -339,7 +352,9 @@ function costruisciReport(servizi, periodo) {
     <tr>
       <td>${escape(s.nome)}</td>
       <td>${escape(etichettaTipo(s))}</td>
-      <td>${s.categoria}</td>
+      <td>${escape(s.categoria)}</td>
+      <td>${s.dataRinnovo ? formattaData(s.dataRinnovo) : '—'}</td>
+      <td>${s.pagamentoAutomatico ? 'Automatico' : 'Manuale'}</td>
       <td class="num">${euro(costoPeriodo(s))}</td>
     </tr>`).join('');
 
@@ -350,12 +365,13 @@ function costruisciReport(servizi, periodo) {
       <thead>
         <tr>
           <th>Servizio</th><th>Tipo</th><th>Categoria</th>
+          <th>Rinnovo</th><th>Pagamento</th>
           <th class="num">Costo ${etichetta}</th>
         </tr>
       </thead>
-      <tbody>${righe || '<tr><td colspan="4">Nessun servizio inserito.</td></tr>'}</tbody>
+      <tbody>${righe || '<tr><td colspan="6">Nessun servizio inserito.</td></tr>'}</tbody>
       <tfoot>
-        <tr><td colspan="3">Totale ${etichetta}</td><td class="num">${euro(totale)}</td></tr>
+        <tr><td colspan="5">Totale ${etichetta}</td><td class="num">${euro(totale)}</td></tr>
       </tfoot>
     </table>`;
 }
