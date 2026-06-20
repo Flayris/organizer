@@ -64,6 +64,7 @@ header {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.25rem;            /* dimensione dell'emoji 🔔 su PC */
   background: var(--vetro);
   border: 1px solid var(--vetro-bordo);
   border-radius: 50%;
@@ -160,6 +161,9 @@ header small { font-size: .72rem; }
   color: var(--ciano);
   flex-shrink: 0;
 }
+/* Su PC si vedono le EMOJI; le icone SVG restano nascoste (compaiono solo sul
+   telefono, vedi @media più sotto). */
+.ico-svg { display: none; }
 
 /* Backup spinto tutto a destra, staccato dagli altri tab. */
 .scheda[for="tab-backup"] { margin-left: auto; }
@@ -460,6 +464,10 @@ button[type="submit"] { grid-column: 1 / -1; }
 
   .schede { padding: 6px var(--px) 0; flex-wrap: wrap; }
   .scheda { padding: 9px 16px; font-size: .85rem; }
+
+  /* Sul telefono: via le emoji, dentro le icone SVG in tinta. */
+  .ico-emoji { display: none; }
+  .ico-svg { display: inline-block; }
 
   /* Campanella un po' più vicina al bordo sui telefoni. */
   #campanella { top: 14px; right: 16px; width: 40px; height: 40px; font-size: 1.1rem; }
