@@ -16,8 +16,12 @@
   // Valori ammessi per i campi a scelta fissa. Centralizzati qui così l'app
   // e l'interfaccia leggono sempre da un'unica fonte.
   const FREQUENZE = ['settimanale', 'mensile', 'annuale'];
-  const CATEGORIE = ['lavoro', 'personale'];
   const TIPI = ['AI', 'altro'];
+
+  // Le categorie ora sono DATI gestibili dall'utente (foglio "Categorie"), non
+  // più una lista fissa. Resta solo questa categoria speciale, sempre presente e
+  // non eliminabile: è la "casa" dei servizi rimasti senza categoria.
+  const CATEGORIA_DEFAULT = 'generale';
 
   /*
    * Crea un nuovo oggetto "servizio" con valori di default validi.
@@ -30,7 +34,7 @@
       nome: dati.nome || '',
       tipo: dati.tipo || 'altro',          // AI | altro
       tipoAltro: dati.tipoAltro || '',     // testo libero, usato solo se tipo === 'altro'
-      categoria: dati.categoria || 'personale', // lavoro | personale
+      categoria: dati.categoria || CATEGORIA_DEFAULT, // nome libero (vedi foglio Categorie)
       costo: typeof dati.costo === 'number' ? dati.costo : 0,
       frequenza: dati.frequenza || 'mensile',   // settimanale | mensile | annuale
       descrizione: dati.descrizione || '',
@@ -50,7 +54,8 @@
       errori.push('Il costo deve essere un numero maggiore o uguale a zero.');
     }
     if (!FREQUENZE.includes(s.frequenza)) errori.push('Frequenza non valida.');
-    if (!CATEGORIE.includes(s.categoria)) errori.push('Categoria non valida.');
+    // La categoria è libera: basta che non sia vuota.
+    if (!s.categoria || !String(s.categoria).trim()) errori.push('La categoria è obbligatoria.');
     if (!TIPI.includes(s.tipo)) errori.push('Tipo non valido.');
     return errori;
   }
@@ -120,6 +125,33 @@
     return s.tipo;
   }
 
+  /*
+   * Elenco COMPLETO delle categorie da mostrare, in ordine alfabetico:
+   * unione di quelle salvate (foglio Categorie), di quelle effettivamente usate
+   * dai servizi e della categoria fissa "generale". Così, anche senza migrazione,
+   * le vecchie categorie (es. lavoro/personale) restano visibili finché sono in uso.
+   */
+  function categorieDa(servizi = [], salvate = []) {
+    const insieme = new Set([CATEGORIA_DEFAULT]);
+    const aggiungi = (c) => { if (c && String(c).trim()) insieme.add(String(c).trim()); };
+    (salvate || []).forEach(aggiungi);
+    (servizi || []).forEach((s) => aggiungi(s.categoria));
+    return [...insieme].sort((a, b) => a.localeCompare(b, 'it', { sensitivity: 'base' }));
+  }
+
+  /*
+   * Conta quanti servizi ci sono sotto ciascuna categoria.
+   * Restituisce una mappa { nomeCategoria: numero }.
+   */
+  function contaCategorie(servizi = []) {
+    const conta = {};
+    (servizi || []).forEach((s) => {
+      const c = (s.categoria && String(s.categoria).trim()) || CATEGORIA_DEFAULT;
+      conta[c] = (conta[c] || 0) + 1;
+    });
+    return conta;
+  }
+
   // Genera un id semplice e univoco a sufficienza per un uso personale.
   function generaId() {
     return 'srv_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -127,9 +159,9 @@
 
   // UNICA cosa esposta all'esterno: l'interfaccia pubblica del modello.
   window.Model = {
-    FREQUENZE, CATEGORIE, TIPI,
+    FREQUENZE, TIPI, CATEGORIA_DEFAULT,
     creaServizio, validaServizio, etichettaTipo,
     costoMensile, costoAnnuale, calcolaTotali,
-    filtraServizi,
+    filtraServizi, categorieDa, contaCategorie,
   };
 })();

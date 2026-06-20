@@ -351,6 +351,9 @@ button[type="submit"] { grid-column: 1 / -1; }
   /* Card servizio: le azioni restano a destra ma un po' più compatte. */
   .servizio { gap: 12px; padding: 10px 12px; }
   .servizio-azioni button { padding: 4px 10px; }
+
+  /* Pulsante "+" un po' più vicino al bordo sui telefoni. */
+  #aggiungiCategoria { right: 16px; bottom: 16px; }
 }
 
 /* Rispetta le zone "sicure" degli iPhone (notch / Dynamic Island) quando
@@ -362,6 +365,135 @@ button[type="submit"] { grid-column: 1 / -1; }
     padding-right: max(28px, env(safe-area-inset-right));
   }
 }
+
+/* ===================== SEZIONE CATEGORIE ===================== */
+#listaCategorie { display: grid; gap: 10px; margin-top: 4px; }
+
+/* Riga categoria: nome a sinistra, conteggio e pulsante a destra. */
+.categoria-riga {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015));
+  border: 1px solid var(--vetro-bordo);
+  border-radius: 12px;
+  padding: 10px 14px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.categoria-nome {
+  flex: 1; min-width: 0;
+  font-weight: 600; color: #fff;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Conteggio servizi come micro-pillola ciano. */
+.categoria-conta {
+  flex-shrink: 0;
+  font-size: .72rem;
+  color: var(--ciano);
+  background: rgba(34, 211, 238, 0.10);
+  border: 1px solid rgba(34, 211, 238, 0.30);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+.categoria-riga button[data-elimina-cat] {
+  flex-shrink: 0;
+  padding: 4px 14px;
+  font-size: .74rem;
+  color: #ff7a8a;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 122, 138, 0.4);
+}
+.categoria-riga button[data-elimina-cat]:hover {
+  background: rgba(255, 122, 138, 0.12);
+  color: #fff;
+}
+/* Etichetta "fissa" al posto di Elimina per la categoria "generale". */
+.categoria-fissa {
+  flex-shrink: 0;
+  font-size: .68rem;
+  color: var(--tenue);
+  padding: 4px 8px;
+}
+
+/* Pulsante flottante "+" per aggiungere una categoria.
+   Sta dentro #vista-categorie, quindi compare solo in quella scheda.
+   La "croce" è disegnata con due barrette (::before/::after) perfettamente
+   centrate: così è sempre dritta, senza dipendere dal carattere. */
+#aggiungiCategoria {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  font-size: 0;               /* nasconde il "+" testuale di riserva */
+  background: var(--grad);
+  border-radius: 50%;
+  box-shadow: var(--glow);
+  z-index: 10;
+}
+#aggiungiCategoria::before,
+#aggiungiCategoria::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 2px;
+}
+#aggiungiCategoria::before { width: 22px; height: 3px; } /* barra orizzontale */
+#aggiungiCategoria::after  { width: 3px; height: 22px; } /* barra verticale  */
+#aggiungiCategoria:hover {
+  box-shadow: 0 0 32px rgba(59, 130, 246, 0.7);
+  transform: translateY(-1px);
+}
+
+/* ===================== FINESTRA DI DIALOGO (modale) ===================== */
+.modale {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;                 /* nascosta finché app.js non la apre */
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(3, 6, 16, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.modale.aperto { display: flex; }
+.modale-pannello {
+  width: 100%;
+  max-width: 420px;
+  background: linear-gradient(160deg, rgba(20,28,48,0.97), rgba(10,14,26,0.97));
+  border: 1px solid var(--vetro-bordo-on);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), var(--glow);
+}
+.modale-pannello h3 { margin: 0 0 8px; font-size: 1.05rem; color: #fff; }
+.modale-pannello p {
+  margin: 0 0 14px;
+  color: var(--tenue);
+  font-size: .9rem;
+  white-space: pre-line;         /* rispetta gli a-capo dei messaggi */
+}
+.modale-pannello input { width: 100%; margin-bottom: 18px; }
+.modale-azioni { display: flex; justify-content: flex-end; gap: 10px; }
+.modale-azioni button { padding: 9px 20px; font-size: .9rem; }
+.modale-azioni #modaleConferma {
+  color: #fff; font-weight: 600;
+  background: var(--grad); box-shadow: var(--glow);
+}
+.btn-vetro {
+  color: var(--ciano);
+  background: var(--vetro);
+  border: 1px solid var(--vetro-bordo);
+}
+.btn-vetro:hover { border-color: var(--vetro-bordo-on); color: #fff; }
 
 /* ===================== SEZIONE "SCARICA PDF" ===================== */
 .aiuto { color: var(--tenue); font-size: .85rem; margin: 0 0 14px; }

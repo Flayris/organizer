@@ -68,6 +68,49 @@ function elimina(id) {
   if (r > 0) sh.deleteRow(r);
 }
 
+// ===================== CATEGORIE =====================
+// Le categorie vivono in un secondo foglio "Categorie" (una colonna "nome").
+// Puoi aprirlo e modificarle a mano: è una normale tabella.
+
+// Restituisce il foglio "Categorie", creandolo (con l'intestazione) se non esiste.
+function foglioCat() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName('Categorie');
+  if (!sh) sh = ss.insertSheet('Categorie');
+  if (sh.getLastRow() === 0) sh.appendRow(['nome']);
+  return sh;
+}
+
+// Legge i nomi delle categorie (salta l'intestazione, ignora le righe vuote).
+function leggiCategorie() {
+  const sh = foglioCat();
+  return sh.getDataRange().getValues().slice(1)
+    .map((r) => String(r[0] || '').trim())
+    .filter((n) => n);
+}
+
+// Aggiunge una categoria (se non esiste già, confronto senza maiuscole/minuscole).
+function salvaCategoria(nome) {
+  nome = String(nome || '').trim();
+  if (!nome) return;
+  const esistenti = leggiCategorie();
+  if (esistenti.some((c) => c.toLowerCase() === nome.toLowerCase())) return;
+  foglioCat().appendRow([nome]);
+}
+
+// Toglie una categoria dal foglio (NON tocca i servizi).
+function eliminaCategoria(nome) {
+  const cerca = String(nome || '').trim().toLowerCase();
+  const sh = foglioCat();
+  const n = Math.max(sh.getLastRow() - 1, 0);
+  if (n === 0) return;
+  const valori = sh.getRange(2, 1, n, 1).getValues();
+  // Dal basso verso l'alto, così cancellare una riga non sposta le successive.
+  for (let i = n - 1; i >= 0; i--) {
+    if (String(valori[i][0] || '').trim().toLowerCase() === cerca) sh.deleteRow(i + 2);
+  }
+}
+
 // Sostituisce TUTTI i servizi (serve all'importazione di un backup).
 function sostituisci(lista) {
   const sh = foglio();
@@ -84,10 +127,10 @@ function rispondi(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// Lettura (GET): l'app chiede l'elenco dei servizi.
+// Lettura (GET): l'app chiede l'elenco dei servizi e delle categorie.
 function doGet(e) {
   if ((e.parameter.token || '') !== SEGRETO) return rispondi({ errore: 'non autorizzato' });
-  return rispondi({ ok: true, dati: leggiTutti() });
+  return rispondi({ ok: true, dati: leggiTutti(), categorie: leggiCategorie() });
 }
 
 // Scrittura (POST): salva / elimina / sostituisci, in base all'azione richiesta.
@@ -99,10 +142,13 @@ function doPost(e) {
   if ((req.token || '') !== SEGRETO) return rispondi({ errore: 'non autorizzato' });
 
   switch (req.azione) {
-    case 'tutti':       return rispondi({ ok: true, dati: leggiTutti() });
-    case 'salva':       salva(req.servizio);        return rispondi({ ok: true });
-    case 'elimina':     elimina(req.id);            return rispondi({ ok: true });
-    case 'sostituisci': sostituisci(req.lista);     return rispondi({ ok: true });
-    default:            return rispondi({ errore: 'azione sconosciuta' });
+    case 'tutti':            return rispondi({ ok: true, dati: leggiTutti() });
+    case 'salva':            salva(req.servizio);             return rispondi({ ok: true });
+    case 'elimina':          elimina(req.id);                 return rispondi({ ok: true });
+    case 'sostituisci':      sostituisci(req.lista);          return rispondi({ ok: true });
+    case 'categorie':        return rispondi({ ok: true, categorie: leggiCategorie() });
+    case 'salvaCategoria':   salvaCategoria(req.nome);        return rispondi({ ok: true });
+    case 'eliminaCategoria': eliminaCategoria(req.nome);      return rispondi({ ok: true });
+    default:                 return rispondi({ errore: 'azione sconosciuta' });
   }
 }

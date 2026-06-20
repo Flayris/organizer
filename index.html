@@ -13,7 +13,7 @@
 
   <!-- Il "?v=" obbliga il browser a riscaricare i file quando cambiano,
        evitando che resti su versioni vecchie in cache. Si alza a ogni modifica. -->
-  <link rel="stylesheet" href="css/style.css?v=12">
+  <link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body>
   <!--
@@ -71,12 +71,16 @@
       </section>
     </div>
 
-    <!-- ============ VISTA 2: CATEGORIE (placeholder, riempita al punto 1) ============ -->
+    <!-- ============ VISTA 2: CATEGORIE ============ -->
     <div id="vista-categorie" class="vista">
       <section class="pannello">
         <h2>Categorie</h2>
-        <p class="aiuto">La gestione delle categorie arriverà qui (aggiungi, conta servizi, elimina).</p>
+        <p class="aiuto">Raggruppano i servizi. Accanto a ognuna vedi quanti servizi contiene.
+          Tocca il pulsante <strong>+</strong> in basso a destra per aggiungerne una.</p>
+        <div id="listaCategorie"></div>
       </section>
+      <!-- Pulsante flottante "+": sta dentro questa vista, quindi compare solo qui. -->
+      <button id="aggiungiCategoria" type="button" title="Aggiungi categoria" aria-label="Aggiungi categoria">+</button>
     </div>
 
     <!-- ============ VISTA 3: NUOVO SERVIZIO ============ -->
@@ -149,10 +153,24 @@
        mostrato solo durante la stampa (vedi @media print nel CSS). -->
   <div id="reportStampa" aria-hidden="true"></div>
 
+  <!-- Finestra di dialogo DELL'APP (in tema): sostituisce i popup di sistema
+       (alert/confirm/prompt). Riempita e mostrata da app.js. -->
+  <div id="modale" class="modale">
+    <div class="modale-pannello" role="dialog" aria-modal="true">
+      <h3 id="modaleTitolo"></h3>
+      <p id="modaleMessaggio"></p>
+      <input id="modaleInput" type="text">
+      <div class="modale-azioni">
+        <button id="modaleAnnulla" type="button" class="btn-vetro">Annulla</button>
+        <button id="modaleConferma" type="button">Conferma</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Ordine importante: prima i dati/logica, poi l'app che li usa. -->
-  <script src="js/model.js?v=12"></script>
-  <script src="js/store.js?v=12"></script>
-  <script src="js/app.js?v=12"></script>
+  <script src="js/model.js?v=14"></script>
+  <script src="js/store.js?v=14"></script>
+  <script src="js/app.js?v=14"></script>
 
   <!-- Registra il service worker: abilita installazione e uso offline. -->
   <script>

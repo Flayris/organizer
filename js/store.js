@@ -10,6 +10,9 @@
  *   salva(servizio)          -> Promise<servizio salvato>   (crea o aggiorna)
  *   elimina(id)              -> Promise<void>
  *   sostituisciTutti(lista)  -> Promise<void>                (per import/restore)
+ *   categorie()              -> Promise<array di nomi>       (categorie salvate)
+ *   salvaCategoria(nome)     -> Promise<void>                (aggiunge se non c'è)
+ *   eliminaCategoria(nome)   -> Promise<void>                (toglie solo il nome)
  *
  * Oggi usiamo LocalStore (salva nel browser di questo PC).
  * Domani basterà scrivere FirebaseStore con gli STESSI metodi e cambiare
@@ -22,8 +25,9 @@
  * I dati restano su questo PC finché non aggiungiamo il cloud.
  */
 class LocalStore {
-  constructor(chiave = 'organizer_servizi') {
+  constructor(chiave = 'organizer_servizi', chiaveCat = 'organizer_categorie') {
     this.chiave = chiave;
+    this.chiaveCat = chiaveCat; // seconda "scatola" per la lista delle categorie
   }
 
   // Legge l'intero elenco dal browser. Se non c'è nulla, lista vuota.
@@ -59,6 +63,36 @@ class LocalStore {
   // Sostituisce TUTTO l'elenco in un colpo solo (serve all'import/ripristino).
   async sostituisciTutti(lista) {
     this._scrivi(Array.isArray(lista) ? lista : []);
+  }
+
+  // Legge la lista delle categorie salvate (solo i nomi).
+  async categorie() {
+    const grezzo = localStorage.getItem(this.chiaveCat);
+    if (!grezzo) return [];
+    try {
+      const lista = JSON.parse(grezzo);
+      return Array.isArray(lista) ? lista : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // Aggiunge una categoria (se non esiste già, confronto senza maiuscole/minuscole).
+  async salvaCategoria(nome) {
+    nome = String(nome || '').trim();
+    if (!nome) return;
+    const lista = await this.categorie();
+    if (!lista.some((c) => c.toLowerCase() === nome.toLowerCase())) {
+      lista.push(nome);
+      localStorage.setItem(this.chiaveCat, JSON.stringify(lista));
+    }
+  }
+
+  // Toglie una categoria dalla lista (NON tocca i servizi).
+  async eliminaCategoria(nome) {
+    const cerca = String(nome || '').trim().toLowerCase();
+    const lista = (await this.categorie()).filter((c) => c.toLowerCase() !== cerca);
+    localStorage.setItem(this.chiaveCat, JSON.stringify(lista));
   }
 
   // Scrittura grezza su localStorage. Privato (per convenzione, con "_").
@@ -104,6 +138,24 @@ class SheetStore {
     await this._invia({ azione: 'sostituisci', lista: Array.isArray(lista) ? lista : [] });
   }
 
+  // Legge le categorie salvate dal foglio (GET, come per i servizi).
+  async categorie() {
+    const r = await fetch(this.url + '?token=' + encodeURIComponent(this.segreto));
+    const dati = await r.json();
+    if (dati.errore) throw new Error(dati.errore);
+    return Array.isArray(dati.categorie) ? dati.categorie : [];
+  }
+
+  // Aggiunge una categoria nel foglio.
+  async salvaCategoria(nome) {
+    await this._invia({ azione: 'salvaCategoria', nome });
+  }
+
+  // Toglie una categoria dal foglio (NON tocca i servizi).
+  async eliminaCategoria(nome) {
+    await this._invia({ azione: 'eliminaCategoria', nome });
+  }
+
   // Invio grezzo di una scrittura (POST). Privato (per convenzione, con "_").
   async _invia(corpo) {
     const r = await fetch(this.url, {
@@ -121,7 +173,7 @@ class SheetStore {
 // === CONFIGURAZIONE DEL FOGLIO GOOGLE ===
 // url: l'indirizzo "/exec" della tua app web. segreto: la parola scelta nello script.
 const CONFIG_SHEET = {
-  url: 'https://script.google.com/macros/s/AKfycbwTzcePEQ4Pnne1hsNJ-LBZyt4XdjrCS1qNSkLdJ9PJydPdnFgNJyqNBND7_KuQwOXd/exec',
+  url: 'https://script.google.com/macros/s/AKfycbzIF6u1e5YrK4Az8oi0I-OZn7SuqXp_9_uOvzW3FqHL1e2AYquWyPaDo5pjQVU9XHcH/exec',
   segreto: 'organizer_laco_05',
 };
 
